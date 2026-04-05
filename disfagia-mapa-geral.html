@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disfagia — Mapa de Raciocínio Diagnóstico</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap');
+
+:root {
+  --bg: #1b1c1e;
+  --surface: #222428;
+  --card: #26282d;
+  --border: #33363d;
+  --text: #e2e4e9;
+  --muted: #6b7280;
+  --subtle: #3d4049;
+
+  --oro: #f0a500;
+  --oro-dim: rgba(240,165,0,0.13);
+  --esof: #38bdf8;
+  --esof-dim: rgba(56,189,248,0.13);
+  --fraq: #a78bfa;
+  --fraq-dim: rgba(167,139,250,0.13);
+  --assoc: #34d399;
+  --assoc-dim: rgba(52,211,153,0.13);
+  --warn: #f87171;
+  --warn-dim: rgba(248,113,113,0.13);
+  --center: #ffffff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+header {
+  padding: 1.5rem 2rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.h-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.h-title em { font-style: italic; color: var(--muted); }
+
+.h-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.h-badges { display: flex; gap: 0.5rem; }
+.badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 2px;
+  border: 1px solid;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* MAIN */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* MAP AREA */
+.map-area {
+  overflow: auto;
+  padding: 2rem;
+  position: relative;
+}
+
+/* CENTER NODE */
+.center-node {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--center);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 3rem;
+  position: relative;
+  box-shadow: 0 0 40px rgba(255,255,255,0.06);
+}
+
+.center-node .cn-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+.center-node .cn-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+/* QUESTION NODE */
+.q-node {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+  cursor: default;
+  position: relative;
+}
+
+.q-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.q-text {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* BRANCH ROW */
+.branch-row {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.branch-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.branch-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.branch-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+/* BRANCH CARD */
+.bc {
+  border-radius: 6px;
+  border: 1px solid;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+.bc:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.bc.active { outline: 2px solid; outline-offset: 2px; }
+
+.bc-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.bc-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+
+.bc-sub {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+/* CONNECTOR */
+.connector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  margin: 0.25rem 0;
+}
+
+.conn-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.conn-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* DIVIDER */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.div-line { flex: 1; height: 1px; background: var(--border); }
+.div-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* WARN BANNER */
+.warn-banner {
+  background: var(--warn-dim);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.warn-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 0.05rem; }
+.warn-text { font-size: 0.78rem; color: #fca5a5; line-height: 1.5; }
+
+/* DETAIL PANEL */
+.detail-panel {
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.dp-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--muted);
+  gap: 0.75rem;
+}
+
+.dp-empty .icon { font-size: 1.8rem; opacity: 0.3; }
+.dp-empty p { font-size: 0.78rem; line-height: 1.6; max-width: 180px; }
+
+#dp-content { display: none; }
+#dp-content.show { display: block; }
+
+.dp-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  display: inline-block;
+  margin-bottom: 0.6rem;
+}
+
+.dp-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+}
+
+.dp-desc {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.dp-section { margin-bottom: 1.1rem; }
+
+.dp-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.dp-section ul { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+.dp-section ul li {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  padding-left: 1rem;
+  position: relative;
+  color: #c9cdd6;
+}
+.dp-section ul li::before { content: '·'; position: absolute; left: 0; color: var(--muted); }
+
+.dp-pearl {
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: 4px;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.76rem;
+  color: #6ee7b7;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+.dp-warn {
+  background: var(--warn-dim);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: 4px;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.76rem;
+  color: #fca5a5;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+/* Colors */
+.oro  { background: var(--oro-dim);  border-color: rgba(240,165,0,0.35);  color: var(--oro); }
+.esof { background: var(--esof-dim); border-color: rgba(56,189,248,0.35); color: var(--esof); }
+.fraq { background: var(--fraq-dim); border-color: rgba(167,139,250,0.35);color: var(--fraq); }
+.assoc{ background: var(--assoc-dim);border-color: rgba(52,211,153,0.35); color: var(--assoc); }
+.warn-c{ background: var(--warn-dim); border-color: rgba(248,113,113,0.35);color: var(--warn); }
+.neu  { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.3); color: #fb923c; }
+.mec  { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.3); color: #fb923c; }
+.mot  { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.3); color: #a78bfa; }
+
+.bc.oro.active  { outline-color: var(--oro); }
+.bc.esof.active { outline-color: var(--esof); }
+.bc.fraq.active { outline-color: var(--fraq); }
+.bc.assoc.active{ outline-color: var(--assoc); }
+.bc.warn-c.active{ outline-color: var(--warn); }
+.bc.neu.active  { outline-color: #fb923c; }
+.bc.mot.active  { outline-color: #a78bfa; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h-title">Disfagia <em>—</em> Raciocínio Diagnóstico</div>
+    <div class="h-sub">Mapa geral de uso clínico · Baseado no raciocínio do especialista</div>
+  </div>
+  <div class="h-badges">
+    <span class="badge" style="color:var(--oro);border-color:var(--oro)">Orofaríngea</span>
+    <span class="badge" style="color:var(--esof);border-color:var(--esof)">Esofágica</span>
+    <span class="badge" style="color:var(--fraq);border-color:var(--fraq)">+ Fraqueza</span>
+    <span class="badge" style="color:var(--assoc);border-color:var(--assoc)">+ Outros sintomas</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- MAP -->
+  <div class="map-area">
+
+    <!-- CENTER -->
+    <div class="center-node">
+      <div class="cn-title">Disfagia</div>
+      <div class="cn-sub">sintoma guia</div>
+    </div>
+
+    <!-- PERGUNTA 1 -->
+    <div class="q-node">
+      <div class="q-label">Pergunta 1 · Localização</div>
+      <div class="q-text">"O paciente engasga ou sente que fica entalado?"</div>
+    </div>
+
+    <div class="branch-row cols-2">
+      <div class="bc oro" onclick="show('oro')">
+        <div class="bc-label">Orofaríngea</div>
+        <div class="bc-title">Engasga · Aponta o pescoço</div>
+        <div class="bc-sub">Dificuldade nos primeiros segundos da deglutição · Tosse · Aspiração · Regurgitação nasal</div>
+      </div>
+      <div class="bc esof" onclick="show('esof')">
+        <div class="bc-label">Esofágica</div>
+        <div class="bc-title">Sente "entalado" · Aponta o tórax</div>
+        <div class="bc-sub">Dificuldade após iniciar a deglutição · Sem tosse · Sem sintomas orais associados</div>
+      </div>
+    </div>
+
+    <div class="divider">
+      <div class="div-line"></div>
+      <div class="div-label">Dentro da Orofaríngea</div>
+      <div class="div-line"></div>
+    </div>
+
+    <!-- PERGUNTA 2 -->
+    <div class="q-node">
+      <div class="q-label">Pergunta 2 · Causa da Orofaríngea</div>
+      <div class="q-text">"Há déficit neurológico, fraqueza muscular ou lesão estrutural associada?"</div>
+    </div>
+
+    <div class="branch-row cols-3">
+      <div class="bc neu" onclick="show('neuro')">
+        <div class="bc-label">Neurogênica</div>
+        <div class="bc-title">Causa Central</div>
+        <div class="bc-sub">AVC ⭐ · Parkinson · EM · Tumores de SNC</div>
+      </div>
+      <div class="bc neu" onclick="show('mio')">
+        <div class="bc-label">Miogênica</div>
+        <div class="bc-title">Fraqueza Muscular Global</div>
+        <div class="bc-sub">Polimiosite · Dermatomiosite · Miastenia gravis · Miopatia por estatina</div>
+      </div>
+      <div class="bc oro" onclick="show('estru')">
+        <div class="bc-label">Estrutural</div>
+        <div class="bc-title">Lesão Anatômica</div>
+        <div class="bc-sub">Zenker · Tumores · Pós-radiação · Faringite · Epiglotite</div>
+      </div>
+    </div>
+
+    <div class="warn-banner">
+      <span class="warn-icon">⚠️</span>
+      <span class="warn-text"><strong>Armadilha clássica:</strong> Não ancore o diagnóstico no AVC só porque o paciente tem esse antecedente. O exame neurológico e o curso temporal precisam ser compatíveis. Se o quadro piora após o AVC ou há achados que não se explicam pela topografia da lesão — investigue mais.</span>
+    </div>
+
+    <div class="divider">
+      <div class="div-line"></div>
+      <div class="div-label">Dentro da Esofágica</div>
+      <div class="div-line"></div>
+    </div>
+
+    <!-- PERGUNTA 3 -->
+    <div class="q-node">
+      <div class="q-label">Pergunta 3 · Causa da Esofágica</div>
+      <div class="q-text">"Sólidos > líquidos (mecânica) ou sólidos = líquidos desde o início (motora)?"</div>
+    </div>
+
+    <div class="branch-row cols-2">
+      <div class="bc mec" onclick="show('mec')">
+        <div class="bc-label">Mecânica / Obstrutiva</div>
+        <div class="bc-title">Sólidos &gt; Líquidos</div>
+        <div class="bc-sub">Progressiva → neoplasia · Intermitente → anel/membrana · Estenose péptica · Esofagite eosinofílica</div>
+      </div>
+      <div class="bc mot" onclick="show('mot')">
+        <div class="bc-label">Motora / Funcional</div>
+        <div class="bc-title">Sólidos = Líquidos</div>
+        <div class="bc-sub">Acalasia ⭐ · Espasmo esofágico · Esclerodermia · Chagas · Esôfago hipercontrátil</div>
+      </div>
+    </div>
+
+    <div class="divider">
+      <div class="div-line"></div>
+      <div class="div-label">Sintomas Associados que Redirecionam o Raciocínio</div>
+      <div class="div-line"></div>
+    </div>
+
+    <!-- PERGUNTA 4 -->
+    <div class="q-node">
+      <div class="q-label">Pergunta 4 · Pivots diagnósticos</div>
+      <div class="q-text">"Há sintomas além da disfagia que redirecionam o raciocínio?"</div>
+    </div>
+
+    <div class="branch-row cols-4">
+      <div class="bc fraq" onclick="show('fraq')">
+        <div class="bc-label">+ Fraqueza</div>
+        <div class="bc-title">Fraqueza Muscular</div>
+        <div class="bc-sub">Muda o sintoma guia. Investigar miopatia ou polineuropatia.</div>
+      </div>
+      <div class="bc warn-c" onclick="show('peso')">
+        <div class="bc-label">Red Flag</div>
+        <div class="bc-title">Perda de Peso</div>
+        <div class="bc-sub">Progressiva em adulto &gt; 50 anos → EDA urgente. Afastar neoplasia.</div>
+      </div>
+      <div class="bc assoc" onclick="show('sistemico')">
+        <div class="bc-label">+ Sistêmico</div>
+        <div class="bc-title">Sintomas Sistêmicos</div>
+        <div class="bc-sub">Raynaud · pele endurecida · artrite → colagenose. Linfonodos → linfoproliferativa.</div>
+      </div>
+      <div class="bc assoc" onclick="show('medicamento')">
+        <div class="bc-label">+ Medicamentos</div>
+        <div class="bc-title">Causa Iatrogênica</div>
+        <div class="bc-sub">Estatinas → miopatia. Amiodarona → disfunção tireoidiana. Corticoides → miopatia.</div>
+      </div>
+    </div>
+
+    <div class="divider">
+      <div class="div-line"></div>
+      <div class="div-label">Investigação por Via</div>
+      <div class="div-line"></div>
+    </div>
+
+    <div class="branch-row cols-2">
+      <div class="bc oro" onclick="show('inv-oro')">
+        <div class="bc-label">Investigação Orofaríngea</div>
+        <div class="bc-title">Videodeglutograma</div>
+        <div class="bc-sub">Exame de escolha · Avalia dinâmica da deglutição · Testa todas as consistências · Aliado do fono</div>
+      </div>
+      <div class="bc esof" onclick="show('inv-esof')">
+        <div class="bc-label">Investigação Esofágica</div>
+        <div class="bc-title">EDA → Manometria</div>
+        <div class="bc-sub">EDA com biópsia como 1º exame · Se normal → manometria · Esofograma baritado em casos selecionados</div>
+      </div>
+    </div>
+
+  </div><!-- /map-area -->
+
+  <!-- DETAIL PANEL -->
+  <div class="detail-panel">
+    <div class="dp-empty" id="dp-empty">
+      <div class="icon">🫁</div>
+      <p>Clique em qualquer card para ver o raciocínio detalhado</p>
+    </div>
+    <div id="dp-content"></div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const details = {
+  oro: {
+    tag: 'Orofaríngea', tagColor: '#f0a500', tagBg: 'rgba(240,165,0,0.13)',
+    title: 'Disfagia Orofaríngea',
+    desc: 'Dificuldade em iniciar a deglutição. O problema está antes do esôfago.',
+    sections: [
+      { title: 'Características clínicas', items: [
+        'Engasga — não "fica entalado"',
+        'Aponta para o pescoço ou região alta',
+        'Sintoma aparece nos primeiros 1-2 segundos da deglutição',
+        'Tosse, aspiração, regurgitação nasal',
+        'Hipersalivação, voz nasalada, rouquidão',
+        'Pneumonias de repetição por aspiração crônica'
+      ]},
+      { title: 'Como o especialista pensa', items: [
+        'É mais rica em sintomas associados que a esofágica',
+        'Perguntar: há déficits neurológicos? Início súbito ou progressivo?',
+        'O videodeglutograma revela fraqueza global — não só disfunção faríngea',
+        'Fraqueza difusa da musculatura da deglutição → mudar sintoma guia para fraqueza'
+      ]}
+    ],
+    pearl: '🌿 A disfagia orofaríngea é mais "barulhenta" — cheia de sintomas associados. Quando parece isolada e o exame neurológico é atípico, sempre revisite o diagnóstico.'
+  },
+  esof: {
+    tag: 'Esofágica', tagColor: '#38bdf8', tagBg: 'rgba(56,189,248,0.13)',
+    title: 'Disfagia Esofágica',
+    desc: 'Dificuldade após iniciar a deglutição. O problema está no corpo do esôfago.',
+    sections: [
+      { title: 'Características clínicas', items: [
+        '"Sente que o alimento fica parado no tórax"',
+        'Não há dificuldade em iniciar a deglutição',
+        'Sem tosse, sem regurgitação nasal, sem sintomas orais',
+        'Localização apontada pelo paciente é menos confiável que na orofaríngea'
+      ]},
+      { title: 'Próximo passo', items: [
+        'Diferenciar mecânica (sólidos > líquidos) de motora (sólidos = líquidos)',
+        'EDA com biópsia como primeiro exame na grande maioria dos casos',
+        'Esofograma baritado em casos selecionados (suspeita de Zenker, ingestão cáustica)'
+      ]}
+    ]
+  },
+  neuro: {
+    tag: 'Neurogênica', tagColor: '#fb923c', tagBg: 'rgba(251,146,60,0.1)',
+    title: 'Causa Neurogênica Central',
+    desc: 'Lesão do SNC comprometendo o controle da deglutição.',
+    sections: [
+      { title: 'Principais causas', items: [
+        'AVC ⭐ — causa mais frequente de disfagia orofaríngea',
+        'Doença de Parkinson — progressiva, bradicinesia, rigidez',
+        'Esclerose Lateral Amiotrófica (ELA) — síndrome mista NMS + NMI',
+        'Esclerose Múltipla — surtos e remissões',
+        'Tumores de SNC — depende da topografia'
+      ]},
+      { title: 'Como o especialista pensa no AVC', items: [
+        'AVC tem pico do déficit no evento → melhora em semanas/meses',
+        'Se o quadro piora após o AVC: investigar outra causa',
+        'Babinski bilateral não é explicado por AVC unilateral',
+        'Fraqueza difusa não é explicada por lesão focal única'
+      ]}
+    ],
+    warn: '⚠️ Não ancore no AVC. O curso temporal e o padrão do exame neurológico precisam ser compatíveis com a topografia da lesão.'
+  },
+  mio: {
+    tag: 'Miogênica', tagColor: '#fb923c', tagBg: 'rgba(251,146,60,0.1)',
+    title: 'Causa Miogênica',
+    desc: 'Fraqueza da musculatura da deglutição por doença muscular primária ou da placa motora.',
+    sections: [
+      { title: 'Principais causas', items: [
+        'Polimiosite / Dermatomiosite — miopatia inflamatória',
+        'Síndrome antissintetase — interstício pulmonar + artrite + miosite',
+        'Miastenia gravis — fatigabilidade, piora ao longo do dia, ptose',
+        'Miopatia por estatina — sempre revisar medicamentos',
+        'Miopatia por corticoide — uso prolongado'
+      ]},
+      { title: 'Como diferenciar de neurogênica', items: [
+        'Miastenia: fatigabilidade é o marcador — piora com o uso, melhora com repouso',
+        'Miopatia inflamatória: CPK elevada, VHS/PCR elevados, sintomas sistêmicos',
+        'Sempre perguntar sobre medicamentos antes de pedir anticorpos'
+      ]}
+    ],
+    pearl: '🌿 Na miopatia, a disfagia reflete fraqueza global — o videodeglutograma vai mostrar força e mobilidade reduzidas da língua e musculatura faríngea em todas as consistências.'
+  },
+  estru: {
+    tag: 'Estrutural', tagColor: '#f0a500', tagBg: 'rgba(240,165,0,0.13)',
+    title: 'Causa Estrutural Orofaríngea',
+    desc: 'Lesão anatômica na orofaringe ou hipofaringe obstruindo ou dificultando a deglutição.',
+    sections: [
+      { title: 'Principais causas', items: [
+        'Divertículo de Zenker — idoso, regurgitação de alimentos não digeridos, halitose',
+        'Tumores de orofaringe/hipofaringe — tabagismo, etilismo, HPV',
+        'Pós-radiação de cabeça e pescoço — estenose cicatricial',
+        'Abscesso retrofaríngeo — febre alta, odinofagia intensa, emergência',
+        'Epiglotite — emergência, estridor, posição em tripé'
+      ]}
+    ]
+  },
+  mec: {
+    tag: 'Mecânica', tagColor: '#fb923c', tagBg: 'rgba(251,146,60,0.1)',
+    title: 'Disfagia Esofágica Mecânica',
+    desc: 'Obstrução física do lúmen esofágico. Sólidos pioram primeiro.',
+    sections: [
+      { title: 'Padrão temporal', items: [
+        'Progressiva em semanas/meses → suspeitar de neoplasia',
+        'Intermitente → anel de Schatzki, esofagite eosinofílica',
+        'Início súbito → impactação alimentar'
+      ]},
+      { title: 'Principais causas', items: [
+        'Carcinoma de esôfago ⚠️ — progressivo, perda de peso, > 50 anos',
+        'Anel de Schatzki — disfagia intermitente para sólidos',
+        'Membrana esofágica (Plummer-Vinson) — mulher, anemia ferropriva',
+        'Estenose péptica — DRGE crônica',
+        'Esofagite eosinofílica — jovem, atópico, não responde a IBP',
+        'Compressão extrínseca — adenopatias, bócio, aneurisma de aorta'
+      ]},
+      { title: 'Investigação', items: [
+        'EDA com biópsia — primeiro exame na maioria dos casos',
+        'Esofograma baritado — se suspeita de Zenker ou ingestão cáustica'
+      ]}
+    ],
+    warn: '⚠️ Disfagia progressiva em adulto > 50 anos = red flag. EDA urgente.'
+  },
+  mot: {
+    tag: 'Motora', tagColor: '#a78bfa', tagBg: 'rgba(167,139,250,0.1)',
+    title: 'Disfagia Esofágica Motora',
+    desc: 'Distúrbio da motilidade esofágica. Sólidos e líquidos afetados desde o início.',
+    sections: [
+      { title: 'Padrão típico', items: [
+        'Sólidos = líquidos desde o início',
+        'Pode ser intermitente ou posicional',
+        'Regurgitação de alimentos não digeridos (acalasia)',
+        'Dor torácica associada (espasmo)'
+      ]},
+      { title: 'Principais causas', items: [
+        'Acalasia ⭐ — regurgitação noturna, líquidos piores no início',
+        'Espasmo esofágico difuso — dor torácica intensa, intermitente',
+        'Esôfago hipercontrátil (quebra-nozes) — manometria',
+        'Esclerodermia — fenômeno de Raynaud, DRGE grave',
+        'Doença de Chagas — área endêmica, megaesôfago'
+      ]},
+      { title: 'Investigação', items: [
+        'EDA — afastar causa mecânica primeiro',
+        'Manometria esofágica — diagnóstico dos distúrbios motores',
+        'Esofograma baritado — acalasia (esôfago em "bico de pássaro")'
+      ]}
+    ]
+  },
+  fraq: {
+    tag: 'Pivot · Fraqueza', tagColor: '#a78bfa', tagBg: 'rgba(167,139,250,0.13)',
+    title: '+ Fraqueza Muscular Associada',
+    desc: 'Quando há fraqueza difusa além da disfagia, o sintoma guia muda.',
+    sections: [
+      { title: 'Como o especialista pensa', items: [
+        'Fraqueza difusa = disfagia por fraqueza global da musculatura',
+        'Mudar sintoma guia: Disfagia → Fraqueza',
+        'Topografar: NMS vs NMI vs placa motora vs músculo',
+        'Ausência de sensibilidade alterada → placa motora ou músculo',
+        'Disestesia distal → polineuropatia periférica'
+      ]},
+      { title: 'Exame neurológico — perguntas-chave', items: [
+        'Babinski bilateral → não é AVC unilateral',
+        'Fasciculações → ELA',
+        'Fatigabilidade → miastenia gravis',
+        'Atrofia + hipotrofia → NMI ou miopatia crônica',
+        'Sem alteração sensitiva → placa motora ou miopatia'
+      ]},
+      { title: 'Investigação da fraqueza', items: [
+        'ENMG — diferencia neuropatia, miopatia, placa motora',
+        'CPK — miopatia primária',
+        'TSH/T4 — hipo e hipertireoidismo causam miopatia/neuropatia',
+        'B12, folato — causas carenciais de polineuropatia',
+        'VHS, PCR — miopatia inflamatória',
+        'Eletroforese de proteínas — gamopatia monoclonal',
+        'Suspender estatinas e revisar todos os medicamentos'
+      ]}
+    ],
+    pearl: '🌿 Pérola do TdC: o videodeglutograma revelou fraqueza global da musculatura — não apenas disfunção faríngea. Esse achado foi o gatilho para mudar o raciocínio do caso.'
+  },
+  peso: {
+    tag: 'Red Flag', tagColor: '#f87171', tagBg: 'rgba(248,113,113,0.13)',
+    title: 'Perda de Peso + Red Flags',
+    desc: 'Sinais que exigem investigação urgente para afastar neoplasia.',
+    sections: [
+      { title: 'Red flags — investigar urgente', items: [
+        'Perda de peso involuntária (> 5-10% em 2-6 meses)',
+        'Disfagia progressiva em adulto > 50 anos',
+        'Odinofagia associada',
+        'Hematemese ou melena',
+        'Linfonodos palpáveis cervicais ou supraclaviculares',
+        'Tabagismo + etilismo crônicos',
+        'Anemia inexplicada'
+      ]},
+      { title: 'Conduta', items: [
+        'Qualquer red flag → EDA com biópsia com urgência',
+        'Não aguardar resposta a IBP antes de endoscopar',
+        'Estadiamento com TC se neoplasia confirmada'
+      ]}
+    ],
+    warn: '⚠️ Disfagia progressiva para sólidos com perda de peso em adulto > 50 anos é neoplasia esofágica até prova em contrário.'
+  },
+  sistemico: {
+    tag: 'Sistêmico', tagColor: '#34d399', tagBg: 'rgba(52,211,153,0.13)',
+    title: 'Sintomas Sistêmicos Associados',
+    desc: 'Disfagia dentro de um quadro sistêmico — a causa está além do esôfago.',
+    sections: [
+      { title: 'Pistas sistêmicas e seus diagnósticos', items: [
+        'Fenômeno de Raynaud + pele endurecida → Esclerodermia',
+        'Rash em V + fraqueza proximal → Dermatomiosite',
+        'Artrite + miosite + interstício pulmonar → Antissintetase',
+        'Linfonodos aumentados + gamopatia → Doença linfoproliferativa',
+        'Área endêmica + megaesôfago → Chagas',
+        'Ptose + diplopia + fatigabilidade → Miastenia gravis',
+        'Bócio + exoftalmia → Doença de Graves (raramente disfagia)'
+      ]},
+      { title: 'Como o especialista pensa', items: [
+        'Perguntar ativamente sobre sintomas respiratórios, cutâneos, articulares',
+        'Gamopatia monoclonal "de significado indeterminado" pode ganhar significado clínico',
+        'Anti-MAG: pensar quando IgM monoclonal + polineuropatia'
+      ]}
+    ],
+    pearl: '🌿 Pérola do TdC: gamopatia monoclonal de "significado indeterminado" pode evoluir para significado neurológico — sempre reavalie com o tempo.'
+  },
+  medicamento: {
+    tag: 'Iatrogênica', tagColor: '#34d399', tagBg: 'rgba(52,211,153,0.13)',
+    title: 'Causa Medicamentosa',
+    desc: 'Medicamentos como causa de disfagia ou de condições que causam disfagia.',
+    sections: [
+      { title: 'Medicamentos que causam miopatia', items: [
+        'Estatinas — miopatia dose-dependente, suspender sempre que suspeitar',
+        'Corticoides — miopatia por uso prolongado, fraqueza proximal',
+        'Colchicina, cloroquina — miopatia em uso crônico'
+      ]},
+      { title: 'Medicamentos que causam disfunção tireoidiana', items: [
+        'Amiodarona — causa hipo E hipertireoidismo',
+        'Tipo 1: excesso de iodo → hipertireoidismo',
+        'Tipo 2: tireoidite destrutiva → tireotoxicose',
+        'Lítio — hipotireoidismo'
+      ]},
+      { title: 'Medicamentos que causam disfagia direta', items: [
+        'Bisfosfonatos — esofagite medicamentosa',
+        'Antibióticos (tetraciclina, doxiciclina) — esofagite se tomados sem água',
+        'AINE — esofagite erosiva'
+      ]}
+    ],
+    warn: '⚠️ Antes de pedir qualquer anticorpo, revise todos os medicamentos em uso. A miopatia por estatina é subdiagnosticada e a solução é simples: suspender.'
+  },
+  'inv-oro': {
+    tag: 'Investigação', tagColor: '#f0a500', tagBg: 'rgba(240,165,0,0.13)',
+    title: 'Investigação da Disfagia Orofaríngea',
+    desc: 'O objetivo é avaliar a dinâmica da deglutição e identificar a causa subjacente.',
+    sections: [
+      { title: 'Exames', items: [
+        'Videodeglutograma (videofluoroscopia) — exame de escolha',
+        'Avalia todas as fases: oral, faríngea, início esofágico',
+        'Testa todas as consistências: líquido fino, grosso, semissólido, sólido',
+        'Mostra aspiração silenciosa, estase, fraqueza da propulsão',
+        'Avaliação fonoaudiológica — aliada essencial',
+        'ENMG — se suspeita de miopatia ou neuropatia',
+        'TC de pescoço — se suspeita estrutural ou tumoral'
+      ]},
+      { title: 'O que o videodeglutograma revela', items: [
+        'Fraqueza global da musculatura → mudar hipótese para causa sistêmica',
+        'Estase faríngea → problema na propulsão (miopatia, neurogênico)',
+        'Aspiração → risco de pneumonia, necessidade de reabilitação',
+        'Resposta às consistências → guia a dieta e o tratamento'
+      ]}
+    ],
+    pearl: '🌿 O videodeglutograma não é só diagnóstico — é terapêutico. Ele define qual consistência o paciente tolera e guia a reabilitação com o fono.'
+  },
+  'inv-esof': {
+    tag: 'Investigação', tagColor: '#38bdf8', tagBg: 'rgba(56,189,248,0.13)',
+    title: 'Investigação da Disfagia Esofágica',
+    desc: 'Sequência lógica: afastar causa mecânica primeiro, depois avaliar motilidade.',
+    sections: [
+      { title: 'Sequência de investigação', items: [
+        '1º — EDA com biópsia esofágica (na maioria dos casos)',
+        '→ Afastar neoplasia, estenose, esofagite eosinofílica, membranas, anéis',
+        '2º — Se EDA normal → Manometria esofágica de alta resolução',
+        '→ Diagnóstico de acalasia, espasmo, esôfago hipercontrátil',
+        'Esofograma baritado — 1º exame apenas em casos selecionados',
+        '→ Suspeita de Zenker, ingestão cáustica, estenose proximal',
+        'pH-metria — se DRGE como causa de estenose péptica'
+      ]},
+      { title: 'Quando a investigação é inconclusiva', items: [
+        'Considerar DRGE como causa de tudo',
+        'Ponderar disfagia funcional',
+        'Revisar medicamentos (esofagite medicamentosa)'
+      ]}
+    ],
+    pearl: '🌿 Na disfagia esofágica, a lógica é: mecânica primeiro (EDA), motora depois (manometria). Não pular etapas.'
+  }
+};
+
+let activeKey = null;
+
+function show(key) {
+  const d = details[key];
+  if (!d) return;
+
+  // toggle active class
+  document.querySelectorAll('.bc').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+
+  document.getElementById('dp-empty').style.display = 'none';
+  const dp = document.getElementById('dp-content');
+  dp.classList.add('show');
+
+  let html = `
+    <span class="dp-tag" style="background:${d.tagBg};color:${d.tagColor}">${d.tag}</span>
+    <div class="dp-title">${d.title}</div>
+    ${d.desc ? `<div class="dp-desc">${d.desc}</div>` : ''}
+  `;
+
+  if (d.sections) {
+    d.sections.forEach(s => {
+      html += `<div class="dp-section">
+        <div class="dp-section-title">${s.title}</div>
+        <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>`;
+    });
+  }
+
+  if (d.pearl) html += `<div class="dp-pearl">${d.pearl}</div>`;
+  if (d.warn) html += `<div class="dp-warn">${d.warn}</div>`;
+
+  dp.innerHTML = html;
+  dp.scrollTop = 0;
+}
+</script>
+</body>
+</html>
