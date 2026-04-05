@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TdC — Disfagia + Fraqueza · Fluxo Diagnóstico</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap');
+
+:root {
+  --bg: #f5f2eb;
+  --paper: #faf8f3;
+  --ink: #1a1710;
+  --muted: #7a7568;
+  --border: #d8d3c8;
+  --shadow: rgba(26,23,16,0.08);
+
+  --step1: #2d5016;
+  --step1-bg: #eef4e8;
+  --step2: #8b3a00;
+  --step2-bg: #fdf0e6;
+  --step3: #003d6b;
+  --step3-bg: #e6f0f8;
+  --step4: #4a1060;
+  --step4-bg: #f3e8fc;
+  --step5: #6b0e0e;
+  --step5-bg: #fde8e8;
+  --pivot: #b8860b;
+  --pivot-bg: #fef9e3;
+  --warn: #c0392b;
+  --pearl: #1a6b4a;
+  --pearl-bg: #e8f5ee;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(180,160,120,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(140,180,140,0.06) 0%, transparent 50%);
+}
+
+/* HEADER */
+header {
+  padding: 2.5rem 3rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  background: var(--paper);
+}
+
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.header-left h1 em {
+  font-style: italic;
+  color: var(--muted);
+}
+
+.header-left .meta {
+  margin-top: 0.4rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header-right {
+  text-align: right;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  margin-left: 0.4rem;
+}
+
+/* MAIN LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 0;
+  min-height: calc(100vh - 100px);
+}
+
+/* FLOW COLUMN */
+.flow {
+  padding: 2.5rem 2.5rem 3rem;
+  border-right: 1px solid var(--border);
+}
+
+/* STEP CARD */
+.step {
+  position: relative;
+  margin-bottom: 0;
+}
+
+.step-inner {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-left: 4px solid;
+  border-radius: 2px;
+  padding: 1.4rem 1.6rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+.step-inner:hover {
+  box-shadow: 0 4px 16px var(--shadow);
+  transform: translateY(-1px);
+}
+
+.step-inner.active {
+  box-shadow: 0 4px 20px var(--shadow);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.step-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.2;
+  flex: 1;
+}
+
+.step-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+  font-style: italic;
+}
+
+.step-tags {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ARROW */
+.arrow {
+  display: flex;
+  align-items: center;
+  padding: 0.3rem 0 0.3rem 2rem;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.arrow-line {
+  width: 2px;
+  background: var(--border);
+  height: 32px;
+  margin-left: 1.5rem;
+}
+
+.arrow-label {
+  position: absolute;
+  left: 2.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* PIVOT */
+.pivot-banner {
+  background: var(--pivot-bg);
+  border: 1px solid var(--pivot);
+  border-radius: 2px;
+  padding: 0.75rem 1.2rem;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pivot-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.pivot-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--pivot);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* DETAIL PANEL */
+.detail-panel {
+  background: var(--paper);
+  padding: 2rem 1.5rem;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  border-left: 1px solid var(--border);
+}
+
+.panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.panel-empty .icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.4; }
+.panel-empty p { font-size: 0.8rem; line-height: 1.6; max-width: 180px; }
+
+#panel-content { display: none; }
+#panel-content.visible { display: block; }
+
+.panel-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+}
+
+.panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.panel-section {
+  margin-bottom: 1.25rem;
+}
+
+.panel-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.panel-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.panel-section ul li {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding-left: 0.9rem;
+  position: relative;
+  color: #3a3730;
+}
+
+.panel-section ul li::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+
+.warn-box {
+  background: #fdf3f2;
+  border: 1px solid #e8a9a5;
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
+  font-size: 0.78rem;
+  color: var(--warn);
+  line-height: 1.5;
+  margin-top: 0.75rem;
+}
+
+.pearl-box {
+  background: var(--pearl-bg);
+  border: 1px solid #a8d5bc;
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
+  font-size: 0.78rem;
+  color: var(--pearl);
+  line-height: 1.5;
+  margin-top: 0.75rem;
+}
+
+.table-mini {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.table-mini th {
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: 0.3rem 0.4rem;
+}
+
+.table-mini td {
+  padding: 0.4rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  color: #3a3730;
+  line-height: 1.4;
+  vertical-align: top;
+}
+
+.table-mini tr:last-child td { border-bottom: none; }
+
+/* Colors per step */
+.s1 { border-left-color: var(--step1); }
+.s1 .step-num { color: var(--step1); }
+.s2 { border-left-color: var(--step2); }
+.s2 .step-num { color: var(--step2); }
+.s3 { border-left-color: var(--step3); }
+.s3 .step-num { color: var(--step3); }
+.s4 { border-left-color: var(--step4); }
+.s4 .step-num { color: var(--step4); }
+.s5 { border-left-color: var(--step5); }
+.s5 .step-num { color: var(--step5); }
+.s-dx { border-left-color: var(--pearl); }
+.s-dx .step-num { color: var(--pearl); }
+
+.tag-neuro { background: #e8f0f8; color: #003d6b; }
+.tag-warn { background: #fde8e8; color: #8b0000; }
+.tag-pearl { background: #e8f5ee; color: #1a6b4a; }
+.tag-exame { background: #f3f0fc; color: #4a1060; }
+.tag-pivot { background: var(--pivot-bg); color: var(--pivot); }
+
+/* FOOTER PEARLS */
+.pearls-section {
+  background: var(--paper);
+  border-top: 2px solid var(--ink);
+  padding: 2rem 3rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.pearl-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.pearl-card .p-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.pearl-card .p-text {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.pearls-header {
+  padding: 1.5rem 3rem 0;
+  background: var(--paper);
+  border-top: 2px solid var(--ink);
+}
+
+.pearls-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .detail-panel { position: static; max-height: none; }
+  .pearls-section { grid-template-columns: 1fr; }
+  header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Disfagia <em>&</em> Fraqueza</h1>
+    <div class="meta">Tá de Clinicagem · Caso Clínico · Raciocínio diagnóstico em camadas</div>
+  </div>
+  <div class="header-right">
+    <span class="pill" style="color:var(--step1)">80 anos · Masc</span>
+    <span class="pill" style="color:var(--step2)">AVC prévio</span>
+    <span class="pill" style="color:var(--step4)">Linfoma B manto</span>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- FLOW -->
+  <div class="flow">
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-inner s1" onclick="show('s1')">
+        <div class="step-header">
+          <span class="step-num">Alíquota 01</span>
+          <span class="step-title">Sintoma guia inicial: Disfagia</span>
+        </div>
+        <div class="step-subtitle">Disfagia + regurgitação + perda de 10 kg em 2 meses. Engasga. Aponta para o pescoço.</div>
+        <div class="step-tags">
+          <span class="tag tag-neuro">AVC 4 meses</span>
+          <span class="tag tag-exame">Videodeglutograma</span>
+          <span class="tag tag-warn">Armadilha: ancorar no AVC</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-line" style="margin-left:1.8rem"></div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="step-inner s2" onclick="show('s2')">
+        <div class="step-header">
+          <span class="step-num">Alíquota 02</span>
+          <span class="step-title">Resultado do Videodeglutograma</span>
+        </div>
+        <div class="step-subtitle">Disfagia orofaríngea moderada-grave. Fraqueza global da musculatura da deglutição.</div>
+        <div class="step-tags">
+          <span class="tag tag-exame">EDA: esofagite erosiva + hérnea hiatal</span>
+          <span class="tag tag-pearl">Não volumosa → não explica disfagia</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:0.5rem"></div>
+
+    <!-- PIVOT 1 -->
+    <div class="pivot-banner">
+      <span class="pivot-icon">🔄</span>
+      <span class="pivot-text">Pivot — sintoma guia muda: Disfagia → Fraqueza Difusa</span>
+    </div>
+
+    <div class="arrow-line" style="margin-left:1.8rem"></div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-inner s3" onclick="show('s3')">
+        <div class="step-header">
+          <span class="step-num">Alíquota 03</span>
+          <span class="step-title">Topografando a Fraqueza</span>
+        </div>
+        <div class="step-subtitle">Exame neurológico misto: sinais de NMS + NMI. Onde está a lesão?</div>
+        <div class="step-tags">
+          <span class="tag tag-warn">Babinski bilateral ≠ AVC unilateral</span>
+          <span class="tag tag-exame">ENMG solicitada</span>
+          <span class="tag tag-neuro">CPK · TSH · B12 · VHS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-line" style="margin-left:1.8rem"></div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+      <div class="step-inner s4" onclick="show('s4')">
+        <div class="step-header">
+          <span class="step-num">Alíquota 04</span>
+          <span class="step-title">Resultados: ENMG + Laboratorial</span>
+        </div>
+        <div class="step-subtitle">Polineuropatia axonal + Hipertireoidismo. Duas hipóteses disputam.</div>
+        <div class="step-tags">
+          <span class="tag tag-warn">Armadilha: parar no hipertireoidismo</span>
+          <span class="tag tag-pivot">Gamopatia monoclonal como causa</span>
+          <span class="tag tag-exame">Eletroforese · Anti-MAG · Imunofixação</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:0.5rem"></div>
+
+    <!-- PIVOT 2 -->
+    <div class="pivot-banner">
+      <span class="pivot-icon">🔄</span>
+      <span class="pivot-text">Pivot — hipertireoidismo é confundidor. Fraqueza ← Polineuropatia ← Gamopatia IgM</span>
+    </div>
+
+    <div class="arrow-line" style="margin-left:1.8rem"></div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-inner s5" onclick="show('s5')">
+        <div class="step-header">
+          <span class="step-num">Alíquota 05</span>
+          <span class="step-title">Diagnóstico Final</span>
+        </div>
+        <div class="step-subtitle">Anti-MAG positivo + infiltração neoplásica no LCR + medula óssea = linfoma ativo causando polineuropatia.</div>
+        <div class="step-tags">
+          <span class="tag tag-warn">Linfoma de células do manto biclonal</span>
+          <span class="tag tag-pearl">Neurolinfomatose possível (não confirmada)</span>
+          <span class="tag tag-exame">Rituximab intratecal</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-line" style="margin-left:1.8rem"></div>
+
+    <!-- DX FINAL -->
+    <div class="step">
+      <div class="step-inner s-dx" onclick="show('dx')">
+        <div class="step-header">
+          <span class="step-num">Diagnóstico</span>
+          <span class="step-title">Resumo da Cadeia Causal</span>
+        </div>
+        <div class="step-subtitle">Linfoma B manto (ativo) → Gamopatia IgM → Anti-MAG → Polineuropatia → Fraqueza global → Disfagia orofaríngea</div>
+        <div class="step-tags">
+          <span class="tag tag-pearl">+ Tireotoxicose por amiodarona tipo 2 (confundidor)</span>
+          <span class="tag tag-pearl">+ Sequela de AVC (confundidor)</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /flow -->
+
+  <!-- DETAIL PANEL -->
+  <div class="detail-panel">
+    <div class="panel-empty" id="panel-empty">
+      <div class="icon">☝️</div>
+      <p>Clique em qualquer etapa para ver os detalhes do raciocínio</p>
+    </div>
+
+    <div id="panel-content"></div>
+  </div>
+</div>
+
+<!-- PEARLS -->
+<div class="pearls-header">
+  <h2>Pérolas do Caso</h2>
+</div>
+<div class="pearls-section">
+  <div class="pearl-card">
+    <div class="p-num">01 · Âncora diagnóstica</div>
+    <div class="p-text">O AVC é o diagnóstico mais fácil e mais perigoso aqui. Se o quadro piora após o AVC, procure outra causa.</div>
+  </div>
+  <div class="pearl-card">
+    <div class="p-num">02 · Curso temporal</div>
+    <div class="p-text">AVC tem pico no evento e melhora em semanas/meses. Piora progressiva por 2 anos antes do AVC = outra doença.</div>
+  </div>
+  <div class="pearl-card">
+    <div class="p-num">03 · Babinski bilateral</div>
+    <div class="p-text">AVC unilateral não explica sinal de Babinski bilateral. Esse achado foi o maior gatilho para ampliar a investigação.</div>
+  </div>
+  <div class="pearl-card">
+    <div class="p-num">04 · Gamopatia</div>
+    <div class="p-text">"Significado indeterminado" pode ganhar significado clínico ou neurológico com o tempo. Sempre reavalie.</div>
+  </div>
+  <div class="pearl-card">
+    <div class="p-num">05 · Amiodarona</div>
+    <div class="p-text">Causa hipo E hipertireoidismo. Tireotoxicose tipo 2 por amiodarona é dose-dependente e não requer tireoidite prévia.</div>
+  </div>
+  <div class="pearl-card">
+    <div class="p-num">06 · Anti-MAG</div>
+    <div class="p-text">Pensar quando há IgM monoclonal + polineuropatia — mesmo sem padrão desmielinizante clássico na ENMG.</div>
+  </div>
+</div>
+
+<script>
+const details = {
+  s1: {
+    tag: 'Alíquota 01', tagColor: '#2d5016', tagBg: '#eef4e8',
+    title: 'Disfagia como sintoma guia',
+    sections: [
+      {
+        title: 'Apresentação',
+        items: [
+          'H, 80 anos, PS com disfagia + regurgitação + 10 kg/2 meses',
+          'Início: sólidos → progrediu para líquidos na última semana',
+          'Engasga. Aponta para o pescoço.',
+          'AVC isquêmico há 4 meses (art. cerebral média direita, M2)',
+          'Linfoma B células do manto em vigilância (3 anos)',
+          'Gamopatia monoclonal de significado indeterminado'
+        ]
+      },
+      {
+        title: 'Raciocínio: Orofaríngea vs Esofágica',
+        items: [
+          'Orofaríngea: aponta pescoço, engasga, inicia logo ao deglutir',
+          'Esofágica: sente "entalado", sintoma ocorre segundos após deglutição',
+          'Conclusão clínica: orofaríngea (contexto de AVC)'
+        ]
+      },
+      {
+        title: 'Causas de disfagia orofaríngea',
+        items: [
+          'Neurogênicas: AVC ⭐, Parkinson, ELA, miastenia gravis',
+          'Miogênicas: polimiosite, dermatomiosite, colagenoses',
+          'Estruturais: Zenker, tumores, pós-radiação',
+          'Inflamatórias: faringite, epiglotite'
+        ]
+      }
+    ],
+    warn: '⚠️ Armadilha 1: Ancorar tudo no AVC e não investigar mais — especialmente diante de exame neurológico atípico.'
+  },
+  s2: {
+    tag: 'Alíquota 02', tagColor: '#8b3a00', tagBg: '#fdf0e6',
+    title: 'Videodeglutograma + Revisão da História',
+    sections: [
+      {
+        title: 'Resultado do Videodeglutograma',
+        items: [
+          'Disfagia orofaríngea moderada-grave confirmada',
+          'Formação e propulsão do bolo inadequadas',
+          'Mobilidade e força da língua reduzidas',
+          'Estase grave em todas as consistências testadas',
+          'CHAVE: fraqueza global da musculatura da deglutição'
+        ]
+      },
+      {
+        title: 'EDA recente',
+        items: [
+          'Esofagite erosiva + hérnia hiatal de deslizamento',
+          'Hérnia não volumosa → não explica a disfagia',
+          'Afasta disfagia esofágica como causa principal'
+        ]
+      },
+      {
+        title: 'Novo dado da história (revisitando)',
+        items: [
+          'Fraqueza de MMII há pelo menos 2 anos ANTES do AVC',
+          'Dor nas pernas que melhora ao repouso',
+          'Progressão lenta → incapaz de ficar em pé',
+          'Perda de funcionalidade muito além do esperado pelo AVC'
+        ]
+      }
+    ],
+    pearl: '🌿 O deglutograma mostrou fraqueza difusa — não apenas disfunção da fase faríngea. Isso foi o gatilho para mudar o sintoma guia.'
+  },
+  s3: {
+    tag: 'Alíquota 03', tagColor: '#003d6b', tagBg: '#e6f0f8',
+    title: 'Topografando a Fraqueza',
+    sections: [
+      {
+        title: 'Exame neurológico — achados',
+        items: [
+          'Força grau 4 difusamente reduzida',
+          'Hipotrofia muscular difusa, proeminente em coxas (quadríceps)',
+          'Sem fasciculações ou mioclonias',
+          'Hiperreflexia à esquerda (compatível com AVC)',
+          'Babinski BILATERAL ← não explicado por AVC unilateral',
+          'Disestesia nos pés (com sensibilidade preservada)',
+          'Incapaz de ficar em pé — extensor do joelho fraco'
+        ]
+      },
+      {
+        title: 'Interpretação',
+        items: [
+          'NMI: atrofia, hipotrofia → miopatia ou polineuropatia',
+          'NMS: Babinski bilateral → lesão central bilateral ou difusa',
+          'Ausência de fatigabilidade → contra miastenia gravis',
+          'Disestesia distal → neuropatia periférica?',
+          'Sem fasciculações → ELA menos provável (mas na manga)'
+        ]
+      },
+      {
+        title: 'Hipóteses em hierarquia',
+        items: [
+          '1. Polineuropatia periférica (disestesia + padrão)',
+          '2. Miopatia inflamatória ou medicamentosa',
+          '3. ELA (síndrome mista NMS + NMI — na manga)',
+          '— Suspeitar miopatia por estatina (rosuvastatina → suspender)'
+        ]
+      },
+      {
+        title: 'Exames solicitados',
+        items: [
+          'ENMG (membro superior, inferior e segmento bulbar)',
+          'CPK, TSH, T4 livre, B12, ácido fólico',
+          'VHS, PCR, hemograma, função renal/hepática',
+          'Sorologias: sífilis, HIV, hepatites, HTLV',
+          'Suspender rosuvastatina'
+        ]
+      }
+    ],
+    warn: '⚠️ Armadilha 2: Interpretar Babinski bilateral como sequela de AVC unilateral. Isso quase encerrou a investigação cedo demais.'
+  },
+  s4: {
+    tag: 'Alíquota 04', tagColor: '#4a1060', tagBg: '#f3e8fc',
+    title: 'Resultados e Novo Pivot',
+    sections: [
+      {
+        title: 'ENMG — resultado',
+        items: [
+          'Polineuropatia periférica sensitivo-motora',
+          'Padrão: axonal, distal, comprimento-dependente',
+          'Grau moderado. Sem desnervação ativa.',
+          'Feita em membros superiores, inferiores e segmento bulbar'
+        ]
+      },
+      {
+        title: 'Laboratorial — destaques',
+        items: [
+          'CPK normal → afasta miopatia primária',
+          'B12, folato, eletrólitos: normais',
+          'Sorologias negativas',
+          'Transaminases levemente elevadas (TGO 150, TGP 116)',
+          'TSH < 0,05 + T4L elevado → HIPERTIREOIDISMO',
+          'Antitireoglobulina positiva (era negativa 1 ano antes)',
+          'HbA1c normal, etilismo negativo na revisão'
+        ]
+      },
+      {
+        title: 'Causas de polineuropatia axonal (investigação)',
+        items: [
+          'Metabólicas: DM ✗, B12 ✗, hipotireoidismo ✗',
+          'Hipertireoidismo → candidato atual',
+          'Gamopatia monoclonal → candidato forte (antecedente!)',
+          'Vasculite → ANCA, crioglobulinas (2º plano)',
+          'Tóxica: etilismo ✗, estatina → suspensa'
+        ]
+      },
+      {
+        title: 'Próximos exames',
+        items: [
+          'Eletroforese de proteínas séricas e urinárias',
+          'Imunofixação sérica e urinária',
+          'Cadeias leves livres, dosagem de imunoglobulinas',
+          'Anti-MAG (anticorpo anti-mielina associado a IgM)',
+          'ANCA, crioglobulinas (2º plano)'
+        ]
+      }
+    ],
+    warn: '⚠️ Armadilha 3: Atribuir tudo ao hipertireoidismo e encerrar a investigação. O paciente não melhorou neurologicamente com controle do TSH.'
+  },
+  s5: {
+    tag: 'Alíquota 05', tagColor: '#6b0e0e', tagBg: '#fde8e8',
+    title: 'Diagnóstico Final',
+    sections: [
+      {
+        title: 'Eletroforese + Imunofixação',
+        items: [
+          '2 picos monoclonais na região das gamaglobulinas',
+          'IgM capa + IgM lambda (doença biclonal)',
+          'IgM total aumentado, IgG e IgA normais'
+        ]
+      },
+      {
+        title: 'Anti-MAG',
+        items: [
+          'Positivo — anticorpo contra bainha de mielina do SNC/SNP',
+          'Produzido por células linfoproliferativas IgM+',
+          'Explica a polineuropatia mesmo com ENMG axonal'
+        ]
+      },
+      {
+        title: 'Líquor',
+        items: [
+          'Imunofenotipagem: 19,5% células anômalas B',
+          'Infiltração neoplásica hematológica confirmada'
+        ]
+      },
+      {
+        title: 'Mielograma + biópsia MO',
+        items: [
+          'Infiltração nodular intersticial por linfoma não-Hodgkin',
+          'Doença linfoproliferativa biclonal de células B maduras',
+          'Maior população: linfoma de células do manto (diagnóstico prévio)',
+          'Segunda população: perfil distinto, menor quantidade'
+        ]
+      },
+      {
+        title: 'PET-CT',
+        items: [
+          'Hipermetabolismo em linfonodo paratraqueal superior direito',
+          'Compatível com atividade linfoproliferativa'
+        ]
+      }
+    ],
+    pearl: '🌿 Tratamento: Rituximab + quimioterapia intratecal. Evoluiu com complicações infecciosas durante internação e veio a óbito.'
+  },
+  dx: {
+    tag: 'Diagnóstico Final', tagColor: '#1a6b4a', tagBg: '#e8f5ee',
+    title: 'Cadeia Causal Completa',
+    table: [
+      { comp: 'Disfagia', dx: 'Orofaríngea por fraqueza muscular global' },
+      { comp: 'Fraqueza difusa', dx: 'Polineuropatia axonal anti-MAG+' },
+      { comp: 'Polineuropatia', dx: 'Gamopatia monoclonal IgM de significado neurológico' },
+      { comp: 'Gamopatia', dx: 'Linfoma B células do manto em atividade (biclonal)' },
+      { comp: 'Hipertireoidismo', dx: 'Tireotoxicose por amiodarona tipo 2 — CONFUNDIDOR' },
+      { comp: 'Babinski bilateral', dx: 'Lesão bilateral NMS — provavelmente neuropatia + sequela AVC' },
+      { comp: 'Possível adicional', dx: 'Neurolinfomatose (infiltração SNP — não confirmada sem biópsia de nervo)' }
+    ],
+    pearl: '🌿 A cadeia diagnóstica: Linfoma ativo → IgM monoclonal → Anti-MAG → Desmielinização/axoniopatia → Fraqueza → Disfagia'
+  }
+};
+
+function show(key) {
+  const d = details[key];
+  if (!d) return;
+  document.getElementById('panel-empty').style.display = 'none';
+  const pc = document.getElementById('panel-content');
+  pc.classList.add('visible');
+
+  let html = `
+    <span class="panel-tag" style="background:${d.tagBg};color:${d.tagColor}">${d.tag}</span>
+    <div class="panel-title">${d.title}</div>
+  `;
+
+  if (d.table) {
+    html += `<table class="table-mini">
+      <tr><th>Componente</th><th>Diagnóstico</th></tr>`;
+    d.table.forEach(r => {
+      html += `<tr><td><strong>${r.comp}</strong></td><td>${r.dx}</td></tr>`;
+    });
+    html += `</table>`;
+  }
+
+  if (d.sections) {
+    d.sections.forEach(s => {
+      html += `<div class="panel-section">
+        <div class="panel-section-title">${s.title}</div>
+        <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>`;
+    });
+  }
+
+  if (d.warn) {
+    html += `<div class="warn-box">${d.warn}</div>`;
+  }
+
+  if (d.pearl) {
+    html += `<div class="pearl-box">${d.pearl}</div>`;
+  }
+
+  pc.innerHTML = html;
+  pc.scrollTop = 0;
+}
+</script>
+</body>
+</html>
