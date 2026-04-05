@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disfagia — Mapa Mental Diagnóstico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #141820;
+    --border: #1e2433;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+
+    --center: #ffffff;
+    --oro: #f59e0b;
+    --oro-dim: rgba(245,158,11,0.12);
+    --esof: #38bdf8;
+    --esof-dim: rgba(56,189,248,0.12);
+    --mec: #fb923c;
+    --mec-dim: rgba(251,146,60,0.1);
+    --mot: #a78bfa;
+    --mot-dim: rgba(167,139,250,0.1);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.1);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 2rem 2.5rem 1rem;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--center);
+  }
+
+  header span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.75rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 10;
+    flex-wrap: wrap;
+  }
+
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .leg-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    overflow: auto;
+    padding: 2rem;
+  }
+
+  svg#map {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Node styles */
+  .node-center { cursor: default; }
+  .node { cursor: pointer; }
+  .node:hover .node-bg { filter: brightness(1.15); }
+
+  .node-bg {
+    transition: filter 0.2s ease;
+    rx: 10;
+  }
+
+  text {
+    font-family: 'DM Sans', sans-serif;
+    pointer-events: none;
+  }
+
+  .label-main {
+    font-size: 13px;
+    font-weight: 500;
+    fill: #e8eaf0;
+  }
+
+  .label-sub {
+    font-size: 10px;
+    font-weight: 400;
+    fill: #9ca3af;
+  }
+
+  .label-center {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    fill: #ffffff;
+  }
+
+  .label-center-sub {
+    font-size: 10px;
+    fill: #6b7280;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* Detail panel */
+  #panel {
+    position: fixed;
+    right: 0; top: 0; bottom: 0;
+    width: 340px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+  }
+
+  #panel.open {
+    transform: translateX(0);
+  }
+
+  #panel-close {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  #panel-close:hover { color: var(--text); border-color: var(--text); }
+
+  #panel h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+  }
+
+  #panel .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 1.25rem;
+  }
+
+  #panel .section-title {
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1.25rem 0 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #panel ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  #panel ul li {
+    font-size: 0.82rem;
+    color: #d1d5db;
+    padding-left: 1rem;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  #panel ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+    font-size: 0.7rem;
+  }
+
+  #panel .alert {
+    background: var(--red-dim);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: #fca5a5;
+    margin-top: 1rem;
+    line-height: 1.5;
+  }
+
+  #panel .exam-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+  }
+  #panel .exam-row:last-child { border-bottom: none; }
+  #panel .exam-name { font-size: 0.8rem; font-weight: 500; }
+  #panel .exam-ind { font-size: 0.72rem; color: var(--muted); text-align: right; flex: 1; }
+
+  .connector { stroke-opacity: 0.35; }
+  .connector-2 { stroke-opacity: 0.2; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Disfagia</h1>
+  <span>Mapa de Raciocínio Diagnóstico · Clique nos nós para detalhar</span>
+</header>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div> Orofaríngea</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#38bdf8"></div> Esofágica</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#fb923c"></div> Mecânica</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#a78bfa"></div> Motora</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#f87171"></div> Red Flags</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#34d399"></div> Investigação</div>
+</div>
+
+<div class="canvas-wrap">
+<svg id="map" width="1000" height="700" viewBox="0 0 1000 700">
+  <defs>
+    <filter id="glow-oro" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#f59e0b" flood-opacity="0.3" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-esof">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#38bdf8" flood-opacity="0.3" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-center">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feFlood flood-color="#ffffff" flood-opacity="0.15" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- === CONNECTORS CENTER → L1 === -->
+  <!-- center to orofaringea -->
+  <line x1="500" y1="350" x2="220" y2="230" stroke="#f59e0b" stroke-width="1.5" class="connector"/>
+  <!-- center to esofagica -->
+  <line x1="500" y1="350" x2="780" y2="230" stroke="#38bdf8" stroke-width="1.5" class="connector"/>
+  <!-- center to red flags -->
+  <line x1="500" y1="350" x2="500" y2="590" stroke="#f87171" stroke-width="1.5" class="connector"/>
+  <!-- center to investigacao -->
+  <line x1="500" y1="350" x2="500" y2="120" stroke="#34d399" stroke-width="1.5" class="connector"/>
+
+  <!-- orofaringea to children -->
+  <line x1="220" y1="230" x2="80" y2="130" stroke="#f59e0b" stroke-width="1" class="connector-2"/>
+  <line x1="220" y1="230" x2="80" y2="230" stroke="#f59e0b" stroke-width="1" class="connector-2"/>
+  <line x1="220" y1="230" x2="80" y2="330" stroke="#f59e0b" stroke-width="1" class="connector-2"/>
+
+  <!-- esofagica to mecanica -->
+  <line x1="780" y1="230" x2="920" y2="130" stroke="#fb923c" stroke-width="1" class="connector-2"/>
+  <!-- esofagica to motora -->
+  <line x1="780" y1="230" x2="920" y2="330" stroke="#a78bfa" stroke-width="1" class="connector-2"/>
+
+  <!-- ============================== -->
+  <!-- CENTER NODE -->
+  <!-- ============================== -->
+  <g class="node-center" filter="url(#glow-center)">
+    <ellipse cx="500" cy="350" rx="72" ry="50"
+      fill="#1a1f2e" stroke="#334155" stroke-width="1.5"/>
+    <text x="500" y="344" class="label-center" text-anchor="middle">Disfagia</text>
+    <text x="500" y="362" class="label-center-sub" text-anchor="middle">sintoma de alarme</text>
+  </g>
+
+  <!-- ============================== -->
+  <!-- OROFARÍNGEA -->
+  <!-- ============================== -->
+  <g class="node" onclick="showPanel('oro')" filter="url(#glow-oro)">
+    <rect x="130" y="200" width="180" height="60" rx="10"
+      class="node-bg" fill="#1c1a0e" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="220" y="225" class="label-main" text-anchor="middle">Orofaríngea</text>
+    <text x="220" y="243" class="label-sub" text-anchor="middle">dificuldade ao iniciar</text>
+  </g>
+
+  <!-- Orofaríngea children -->
+  <g class="node" onclick="showPanel('neuro')">
+    <rect x="20" y="100" width="120" height="50" rx="8"
+      class="node-bg" fill="#161410" stroke="#d97706" stroke-width="1"/>
+    <text x="80" y="121" class="label-sub" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="DM Mono, monospace" letter-spacing="0.05em">NEUROMOTORA</text>
+    <text x="80" y="139" class="label-sub" text-anchor="middle" fill="#d1d5db" font-size="11">AVC, Parkinson</text>
+  </g>
+
+  <g class="node" onclick="showPanel('estrutural')">
+    <rect x="20" y="200" width="120" height="50" rx="8"
+      class="node-bg" fill="#161410" stroke="#d97706" stroke-width="1"/>
+    <text x="80" y="221" class="label-sub" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="DM Mono, monospace" letter-spacing="0.05em">ESTRUTURAL</text>
+    <text x="80" y="239" class="label-sub" text-anchor="middle" fill="#d1d5db" font-size="11">Zenker, tumores</text>
+  </g>
+
+  <g class="node" onclick="showPanel('inflamatorio')">
+    <rect x="20" y="300" width="120" height="50" rx="8"
+      class="node-bg" fill="#161410" stroke="#d97706" stroke-width="1"/>
+    <text x="80" y="321" class="label-sub" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="DM Mono, monospace" letter-spacing="0.05em">INFLAMATÓRIA</text>
+    <text x="80" y="339" class="label-sub" text-anchor="middle" fill="#d1d5db" font-size="11">Faringite, epiglotite</text>
+  </g>
+
+  <!-- ============================== -->
+  <!-- ESOFÁGICA -->
+  <!-- ============================== -->
+  <g class="node" onclick="showPanel('esof')" filter="url(#glow-esof)">
+    <rect x="690" y="200" width="180" height="60" rx="10"
+      class="node-bg" fill="#0d1a22" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="780" y="225" class="label-main" text-anchor="middle">Esofágica</text>
+    <text x="780" y="243" class="label-sub" text-anchor="middle">sensação de parada</text>
+  </g>
+
+  <!-- Mecânica -->
+  <g class="node" onclick="showPanel('mecanica')">
+    <rect x="855" y="100" width="130" height="60" rx="8"
+      class="node-bg" fill="#1a120a" stroke="#fb923c" stroke-width="1.2"/>
+    <text x="920" y="125" class="label-sub" text-anchor="middle" fill="#fb923c" font-size="9" font-family="DM Mono, monospace" letter-spacing="0.05em">MECÂNICA</text>
+    <text x="920" y="143" class="label-sub" text-anchor="middle" fill="#d1d5db" font-size="11">sólidos &gt; líquidos</text>
+  </g>
+
+  <!-- Motora -->
+  <g class="node" onclick="showPanel('motora')">
+    <rect x="855" y="300" width="130" height="60" rx="8"
+      class="node-bg" fill="#120e1c" stroke="#a78bfa" stroke-width="1.2"/>
+    <text x="920" y="325" class="label-sub" text-anchor="middle" fill="#a78bfa" font-size="9" font-family="DM Mono, monospace" letter-spacing="0.05em">MOTORA</text>
+    <text x="920" y="343" class="label-sub" text-anchor="middle" fill="#d1d5db" font-size="11">sólidos = líquidos</text>
+  </g>
+
+  <!-- ============================== -->
+  <!-- INVESTIGAÇÃO (TOP) -->
+  <!-- ============================== -->
+  <g class="node" onclick="showPanel('investigacao')">
+    <rect x="380" y="60" width="240" height="55" rx="10"
+      class="node-bg" fill="#0a1a14" stroke="#34d399" stroke-width="1.5"/>
+    <text x="500" y="82" class="label-main" text-anchor="middle" fill="#34d399">Investigação</text>
+    <text x="500" y="100" class="label-sub" text-anchor="middle">EDA · Videofluoroscopia · Manometria</text>
+  </g>
+
+  <!-- ============================== -->
+  <!-- RED FLAGS (BOTTOM) -->
+  <!-- ============================== -->
+  <g class="node" onclick="showPanel('redflags')">
+    <rect x="350" y="560" width="300" height="60" rx="10"
+      class="node-bg" fill="#1a0d0d" stroke="#f87171" stroke-width="1.5"/>
+    <text x="500" y="583" class="label-main" text-anchor="middle" fill="#f87171">🚨 Red Flags</text>
+    <text x="500" y="603" class="label-sub" text-anchor="middle">Perda de peso · Progressão · Odinofagia</text>
+  </g>
+
+  <!-- PISTAS CLÍNICAS BADGES (middle area) -->
+  <!-- Padrão sólidos -->
+  <g class="node" onclick="showPanel('padrao')">
+    <rect x="330" y="430" width="160" height="46" rx="8"
+      class="node-bg" fill="#14151c" stroke="#334155" stroke-width="1"/>
+    <text x="410" y="449" class="label-sub" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="DM Mono, monospace">PADRÃO TEMPORAL</text>
+    <text x="410" y="466" class="label-sub" text-anchor="middle" fill="#cbd5e1" font-size="11">progressivo vs intermitente</text>
+  </g>
+
+  <!-- Localização -->
+  <g class="node" onclick="showPanel('localizacao')">
+    <rect x="510" y="430" width="160" height="46" rx="8"
+      class="node-bg" fill="#14151c" stroke="#334155" stroke-width="1"/>
+    <text x="590" y="449" class="label-sub" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="DM Mono, monospace">LOCALIZAÇÃO</text>
+    <text x="590" y="466" class="label-sub" text-anchor="middle" fill="#cbd5e1" font-size="11">pescoço vs tórax</text>
+  </g>
+
+  <!-- connectors to badges -->
+  <line x1="500" y1="400" x2="410" y2="430" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="500" y1="400" x2="590" y2="430" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="500" y1="350" x2="500" y2="400" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
+
+</svg>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="panel">
+  <button id="panel-close" onclick="closePanel()">✕</button>
+  <div id="panel-content"></div>
+</div>
+
+<script>
+const data = {
+  oro: {
+    title: 'Disfagia Orofaríngea',
+    color: '#f59e0b',
+    tag: 'Localização',
+    sections: [
+      {
+        title: 'Características clínicas',
+        items: [
+          'Dificuldade nos primeiros segundos da deglutição',
+          'Tosse, engasgo, regurgitação nasal',
+          'Sensação de alimento na garganta',
+          'Aspiração frequente → pneumonias de repetição',
+          'Sialorréia, disfonia associada'
+        ]
+      },
+      {
+        title: 'Pergunta-chave',
+        items: ['Há déficit neurológico associado?', 'Início súbito ou progressivo?']
+      }
+    ]
+  },
+  esof: {
+    title: 'Disfagia Esofágica',
+    color: '#38bdf8',
+    tag: 'Localização',
+    sections: [
+      {
+        title: 'Características clínicas',
+        items: [
+          'Sensação de alimento parado no tórax ou epigástrio',
+          'Ocorre segundos após engolir',
+          'Localização apontada pelo paciente (nem sempre confiável)',
+          'Sem dificuldade ao iniciar a deglutição'
+        ]
+      },
+      {
+        title: 'Próximo passo',
+        items: [
+          'Diferenciar Mecânica vs Motora',
+          'Sólidos > líquidos → mecânica/obstrutiva',
+          'Sólidos = líquidos → motora/funcional'
+        ]
+      }
+    ]
+  },
+  neuro: {
+    title: 'Causas Neuromusculares',
+    color: '#f59e0b',
+    tag: 'Orofaríngea',
+    sections: [
+      {
+        title: 'Diagnósticos',
+        items: [
+          'AVC — causa mais frequente, início súbito',
+          'Doença de Parkinson — progressiva, bradicinesia',
+          'ELA — fraqueza progressiva, fasciculações',
+          'Miastenia gravis — piora ao longo do dia, ptose',
+          'Esclerose múltipla — surtos e remissões',
+          'Tumores de SNC — depende da localização'
+        ]
+      },
+      {
+        title: 'Pista diagnóstica',
+        items: ['Déficits neurológicos associados', 'Avaliar via videofluoroscopia']
+      }
+    ]
+  },
+  estrutural: {
+    title: 'Causas Estruturais',
+    color: '#f59e0b',
+    tag: 'Orofaríngea',
+    sections: [
+      {
+        title: 'Diagnósticos',
+        items: [
+          'Divertículo de Zenker — regurgitação, halitose, idoso',
+          'Tumores de orofaringe/hipofaringe — tabagismo, etilismo',
+          'Osteofitose cervical — compressão extrínseca',
+          'Abscesso retrofaríngeo — febre, odinofagia intensa'
+        ]
+      }
+    ]
+  },
+  inflamatorio: {
+    title: 'Causas Inflamatórias',
+    color: '#f59e0b',
+    tag: 'Orofaríngea',
+    sections: [
+      {
+        title: 'Diagnósticos',
+        items: [
+          'Faringite / amigdalite — odinofagia proeminente',
+          'Epiglotite — emergência, febre alta, estridor',
+          'Candidíase orofaríngea — imunossuprimidos'
+        ]
+      }
+    ]
+  },
+  mecanica: {
+    title: 'Disfagia Mecânica',
+    color: '#fb923c',
+    tag: 'Esofágica · Obstrutiva',
+    sections: [
+      {
+        title: 'Padrão típico',
+        items: [
+          'Sólidos > líquidos (começa com sólidos)',
+          'Progressiva → suspeitar de neoplasia',
+          'Intermitente → anel ou membrana'
+        ]
+      },
+      {
+        title: 'Luminais',
+        items: [
+          'Carcinoma de esôfago ⚠️ — progressivo, perda de peso',
+          'Anel de Schatzki — disfagia intermitente a sólidos',
+          'Membrana esofágica (Plummer-Vinson) — mulher, anemia ferropriva',
+          'Corpo estranho'
+        ]
+      },
+      {
+        title: 'Murais / Extrínsecas',
+        items: [
+          'Estenose péptica (DRGE crônica)',
+          'Esofagite eosinofílica — jovem, atópico',
+          'Compressão mediastinal (adenopatias, bócio, aneurisma)',
+          'Disfagia lusória — artéria subclávia aberrante'
+        ]
+      }
+    ]
+  },
+  motora: {
+    title: 'Disfagia Motora',
+    color: '#a78bfa',
+    tag: 'Esofágica · Funcional',
+    sections: [
+      {
+        title: 'Padrão típico',
+        items: [
+          'Sólidos = líquidos desde o início',
+          'Pode ser intermitente ou posicional',
+          'Associada a regurgitação, dor torácica'
+        ]
+      },
+      {
+        title: 'Diagnósticos',
+        items: [
+          'Acalasia ⭐ — regurgitação noturna, líquidos piores no início',
+          'Espasmo esofágico difuso — dor torácica intensa, intermitente',
+          'Esôfago em quebra-nozes — dor torácica, manometria',
+          'Esclerodermia — fenômeno de Raynaud, DRGE grave',
+          'Doença de Chagas — área endêmica, megaesôfago'
+        ]
+      }
+    ]
+  },
+  redflags: {
+    title: '🚨 Red Flags',
+    color: '#f87171',
+    tag: 'Investigar urgente',
+    sections: [
+      {
+        title: 'Sinais de alarme',
+        items: [
+          'Perda de peso involuntária',
+          'Disfagia progressiva em adulto > 50 anos',
+          'Odinofagia associada',
+          'Hematemese ou melena',
+          'Linfonodos palpáveis cervicais',
+          'Tabagismo + etilismo crônicos',
+          'Anemia inexplicada'
+        ]
+      }
+    ],
+    alert: 'Qualquer red flag → EDA com urgência para afastar neoplasia esofágica.'
+  },
+  investigacao: {
+    title: 'Investigação',
+    color: '#34d399',
+    tag: 'Exames',
+    exams: [
+      { name: 'EDA', ind: 'Disfagia esofágica — 1ª linha, afastar neoplasia' },
+      { name: 'Videofluoroscopia', ind: 'Disfagia orofaríngea, dinâmica da deglutição' },
+      { name: 'Papinha baritada', ind: 'Triagem, acalasia, Zenker, anel' },
+      { name: 'Manometria', ind: 'Distúrbios motores — acalasia, espasmo' },
+      { name: 'TC tórax/pescoço', ind: 'Compressão extrínseca, mediastino' },
+      { name: 'pH-metria', ind: 'DRGE associado a estenose péptica' },
+    ]
+  },
+  padrao: {
+    title: 'Padrão Temporal',
+    color: '#94a3b8',
+    tag: 'Raciocínio clínico',
+    sections: [
+      {
+        title: 'Progressivo',
+        items: [
+          'Piora em semanas/meses → neoplasia até prova em contrário',
+          'Começa com sólidos, avança para líquidos'
+        ]
+      },
+      {
+        title: 'Intermitente',
+        items: [
+          'Episódico, sem progressão clara',
+          'Pensar em anel de Schatzki, espasmo esofágico',
+          'Às vezes relacionado a alimentos específicos'
+        ]
+      },
+      {
+        title: 'Estável / crônico',
+        items: [
+          'Anos de evolução sem piora → doença motora, DRGE'
+        ]
+      }
+    ]
+  },
+  localizacao: {
+    title: 'Localização',
+    color: '#94a3b8',
+    tag: 'Raciocínio clínico',
+    sections: [
+      {
+        title: 'Pescoço / orofaringe',
+        items: [
+          'Aponta para disfagia orofaríngea',
+          'Correlação anatômica mais confiável nessa região'
+        ]
+      },
+      {
+        title: 'Tórax / epigástrio',
+        items: [
+          'Sugere disfagia esofágica',
+          'Mas atenção: paciente pode apontar alto e o problema ser baixo',
+          'Localização é guia, não diagnóstico'
+        ]
+      }
+    ]
+  }
+};
+
+function showPanel(key) {
+  const d = data[key];
+  if (!d) return;
+  let html = `<h2>${d.title}</h2>
+    <span class="tag" style="background:${d.color}22;color:${d.color};border:1px solid ${d.color}44">${d.tag}</span>`;
+
+  if (d.exams) {
+    html += `<div class="section-title">Exames</div>`;
+    d.exams.forEach(e => {
+      html += `<div class="exam-row">
+        <span class="exam-name">${e.name}</span>
+        <span class="exam-ind">${e.ind}</span>
+      </div>`;
+    });
+  }
+
+  if (d.sections) {
+    d.sections.forEach(s => {
+      html += `<div class="section-title">${s.title}</div><ul>`;
+      s.items.forEach(i => { html += `<li>${i}</li>`; });
+      html += `</ul>`;
+    });
+  }
+
+  if (d.alert) {
+    html += `<div class="alert">${d.alert}</div>`;
+  }
+
+  document.getElementById('panel-content').innerHTML = html;
+  document.getElementById('panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+}
+</script>
+</body>
+</html>
