@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anemia — Raciocínio Diagnóstico</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #f9f7f4;
+  --paper: #ffffff;
+  --ink: #1a1814;
+  --ink2: #3d3a35;
+  --muted: #8a8580;
+  --border: #e0ddd8;
+  --border-strong: #b8b4ae;
+
+  /* Um acento por passo — discreto */
+  --p1: #1a4a2e;   /* verde escuro — passo 1 */
+  --p2: #1a2e4a;   /* azul escuro — passo 2 */
+  --p3: #3a1a00;   /* marrom escuro — passo 3 */
+  --warn: #8b1a1a; /* vermelho escuro — urgência */
+
+  --p1-light: #eef4f0;
+  --p2-light: #eef0f4;
+  --p3-light: #f4f0ea;
+  --warn-light: #f4eaea;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--paper);
+  border-bottom: 2px solid var(--ink);
+  padding: 1.4rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.h-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.h-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+.h-note {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 280px;
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* ── LAYOUT ── */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── FLOW ── */
+.flow {
+  overflow-y: auto;
+  padding: 2rem 2.5rem 4rem;
+  border-right: 1px solid var(--border);
+}
+
+/* ── CONCEITO CENTRAL ── */
+.concept {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 4px;
+  padding: 1rem 1.4rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.concept-icon { font-size: 1.2rem; flex-shrink: 0; }
+.concept-text { font-family: 'Fraunces', serif; font-size: 0.95rem; font-style: italic; line-height: 1.4; }
+.concept-text strong { font-style: normal; font-weight: 600; }
+
+/* ── PASSO ── */
+.step {
+  margin-bottom: 2rem;
+}
+
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.step-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 0.25rem 0.65rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.step-divider { flex: 1; height: 1px; background: var(--border); }
+
+/* Cores dos passos — só no badge e na borda esquerda dos cards */
+.s1 .step-badge { background: var(--p1-light); color: var(--p1); }
+.s2 .step-badge { background: var(--p2-light); color: var(--p2); }
+.s3 .step-badge { background: var(--p3-light); color: var(--p3); }
+
+/* ── PERGUNTA ── */
+.question {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  padding: 0.75rem 1.1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 3px;
+}
+.q-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.q-text {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--ink2);
+  line-height: 1.4;
+}
+
+/* ── GRID DE CARDS ── */
+.cards { display: grid; gap: 0.6rem; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ── CARD ── */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-left: 3px solid;
+  border-radius: 3px;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.card:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+
+.card.active {
+  box-shadow: 0 3px 16px rgba(0,0,0,0.1);
+  background: #fdfcfb;
+}
+
+.card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.card-title {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 0.2rem;
+}
+
+.card-sub {
+  font-size: 0.72rem;
+  color: var(--ink2);
+  line-height: 1.4;
+  font-weight: 300;
+}
+
+/* Cores das bordas por passo */
+.s1 .card { border-left-color: var(--p1); }
+.s2 .card { border-left-color: var(--p2); }
+.s3 .card { border-left-color: var(--p3); }
+.card.urgent { border-left-color: var(--warn) !important; background: var(--warn-light); }
+.card.urgent .card-title { color: var(--warn); }
+
+/* ── VCM SUBLINHA ── */
+.vcm-group { margin-bottom: 1rem; }
+.vcm-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.vcm-label span {
+  font-weight: 500;
+  color: var(--ink2);
+}
+
+/* ── NOTA / BANNER ── */
+.note {
+  border-left: 3px solid;
+  padding: 0.65rem 1rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  margin: 0.6rem 0;
+  border-radius: 0 3px 3px 0;
+  background: var(--paper);
+  color: var(--ink2);
+}
+.note.pearl { border-color: var(--p1); }
+.note.warn  { border-color: var(--warn); color: var(--warn); background: var(--warn-light); }
+
+/* ── PAINEL ── */
+.panel {
+  background: var(--paper);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--muted);
+  gap: 0.75rem;
+  padding: 2rem;
+}
+.panel-empty .icon { font-size: 1.6rem; opacity: 0.2; }
+.panel-empty p { font-size: 0.76rem; line-height: 1.6; max-width: 160px; }
+
+#dp { display: none; padding: 1.5rem; }
+#dp.show { display: block; }
+
+.dp-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.dp-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 0.25rem;
+}
+
+.dp-desc {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  font-style: italic;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+
+.dp-section { margin-bottom: 1rem; }
+
+.dp-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+
+.dp-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.dp-section ul li {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  padding-left: 0.85rem;
+  position: relative;
+  color: var(--ink2);
+}
+
+.dp-section ul li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--border-strong);
+  font-size: 0.65rem;
+  top: 0.05rem;
+}
+
+.dp-note {
+  border-left: 2px solid;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  border-radius: 0 2px 2px 0;
+}
+.dp-note.pearl { border-color: var(--p1); color: var(--p1); background: var(--p1-light); }
+.dp-note.warn  { border-color: var(--warn); color: var(--warn); background: var(--warn-light); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h-title">Anemia</div>
+    <div class="h-sub">Raciocínio Diagnóstico · 3 passos</div>
+  </div>
+  <div class="h-note">
+    Clique em qualquer item para ver o raciocínio detalhado
+  </div>
+</header>
+
+<div class="main">
+
+<!-- ── FLOW ── -->
+<div class="flow">
+
+  <!-- CONCEITO CENTRAL -->
+  <div class="concept">
+    <span class="concept-icon">⚑</span>
+    <div class="concept-text">
+      <strong>Anemia não é diagnóstico final — é uma síndrome.</strong>
+      Hb baixa é o sinal. Sempre investigue a causa base.
+    </div>
+  </div>
+
+  <!-- ══ PASSO 1 ══ -->
+  <div class="step s1">
+    <div class="step-head">
+      <span class="step-badge">Passo 1</span>
+      <span class="step-title">Reticulócito — a fábrica está respondendo?</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Pergunta central</div>
+      <div class="q-text">"O corpo está conseguindo produzir novas hemácias? Ou há um problema nos insumos ou na medula?"</div>
+    </div>
+
+    <div class="cards g2">
+      <div class="card" onclick="show('retic-alto')">
+        <div class="card-label">Reticulócito elevado · &gt; 100–120k</div>
+        <div class="card-title">Fábrica respondendo</div>
+        <div class="card-sub">Insumos presentes, medula funcionando — mas hemácias estão sendo destruídas ou perdidas. Pensar em hemólise ou sangramento agudo.</div>
+      </div>
+      <div class="card" onclick="show('retic-baixo')">
+        <div class="card-label">Reticulócito baixo ou "normal"</div>
+        <div class="card-title">Fábrica não responde</div>
+        <div class="card-sub">Normal frente a anemia é patológico. Corpo deveria estar fabricando mais. Problema nos insumos (ferro, B12) ou na medula óssea.</div>
+      </div>
+    </div>
+
+    <div class="note pearl">
+      🌿 Reticulócito "normal" diante de anemia já é anormal — o corpo deveria estar fabricando mais. Não interprete como tranquilizador.
+    </div>
+  </div>
+
+  <!-- ══ PASSO 2 ══ -->
+  <div class="step s2">
+    <div class="step-head">
+      <span class="step-badge">Passo 2</span>
+      <span class="step-title">Esfregaço — há achado morfológico diagnóstico?</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Pergunta central</div>
+      <div class="q-text">"Alguma alteração na forma das células direciona o diagnóstico imediatamente?"</div>
+    </div>
+
+    <div class="cards g3">
+      <div class="card" onclick="show('hiperseg')">
+        <div class="card-label">Achado 1</div>
+        <div class="card-title">Neutrófilo hipersegmentado</div>
+        <div class="card-sub">≥ 5% no esfregaço → deficiência de B12. Núcleo com 5 ou mais lobos.</div>
+      </div>
+      <div class="card" onclick="show('dacrіо')">
+        <div class="card-label">Achado 2</div>
+        <div class="card-title">Dacriócito</div>
+        <div class="card-sub">Hemácia em forma de lágrima → mielofibrose.</div>
+      </div>
+      <div class="card urgent" onclick="show('esquizo')">
+        <div class="card-label">Achado 3 · Urgência</div>
+        <div class="card-title">Esquizócito</div>
+        <div class="card-sub">Hemácia fragmentada → MAT (PTT, SHU). Agir imediatamente.</div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      ⚠️ Esquizócitos = emergência. Microangiopatia trombótica tem mortalidade alta sem tratamento rápido.
+    </div>
+
+    <div class="note pearl" style="margin-top:0.4rem">
+      🌿 Lembre de ler a descrição textual do hemograma — não só os números. O esfregaço já pode estar descrito no laudo.
+    </div>
+  </div>
+
+  <!-- ══ PASSO 3 ══ -->
+  <div class="step s3">
+    <div class="step-head">
+      <span class="step-badge">Passo 3</span>
+      <span class="step-title">VCM — qual o tamanho da hemácia? (normal: 80–100 fL)</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Pergunta central</div>
+      <div class="q-text">"A hemácia é pequena, normal ou grande? Isso estreita muito as causas."</div>
+    </div>
+
+    <!-- MICROCÍTICA -->
+    <div class="vcm-group">
+      <div class="vcm-label">VCM &lt; 80 · <span>Microcítica</span></div>
+      <div class="cards g4">
+        <div class="card" onclick="show('ferropriva')">
+          <div class="card-label">1ª causa</div>
+          <div class="card-title">Anemia Ferropriva</div>
+          <div class="card-sub">Ferritina &lt; 30 · Sat transferrina &lt; 20%</div>
+        </div>
+        <div class="card" onclick="show('dc-micro')">
+          <div class="card-label">Inflamação</div>
+          <div class="card-title">Doença Crônica</div>
+          <div class="card-sub">IRC · Neoplasia · Inflamação crônica</div>
+        </div>
+        <div class="card" onclick="show('talassemia')">
+          <div class="card-label">Hereditária</div>
+          <div class="card-title">Talassemia</div>
+          <div class="card-sub">VCM muito baixo · Eletroforese de Hb</div>
+        </div>
+        <div class="card" onclick="show('sidero')">
+          <div class="card-label">Rara</div>
+          <div class="card-title">Sideroblástica</div>
+          <div class="card-sub">Ferro elevado · Biópsia de MO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NORMOCÍTICA -->
+    <div class="vcm-group">
+      <div class="vcm-label">VCM 80–100 · <span>Normocítica</span></div>
+      <div class="cards g4">
+        <div class="card" onclick="show('dc-normo')">
+          <div class="card-label">Mais comum</div>
+          <div class="card-title">Doença Crônica</div>
+          <div class="card-sub">IRC · Infecção · Neoplasia</div>
+        </div>
+        <div class="card" onclick="show('hipotiroid')">
+          <div class="card-label">Endócrina</div>
+          <div class="card-title">Hipotireoidismo</div>
+          <div class="card-sub">TSH elevado · T4L baixo</div>
+        </div>
+        <div class="card" onclick="show('hemolise')">
+          <div class="card-label">Reticulócito ↑</div>
+          <div class="card-title">Hemólise</div>
+          <div class="card-sub">BT/BD · LDH · Haptoglobina · Coombs</div>
+        </div>
+        <div class="card" onclick="show('medula')">
+          <div class="card-label">Medula óssea</div>
+          <div class="card-title">Invasão / Aplasia</div>
+          <div class="card-sub">Pancitopenia · Biópsia de MO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACROCÍTICA -->
+    <div class="vcm-group">
+      <div class="vcm-label">VCM &gt; 100 · <span>Macrocítica</span></div>
+      <div class="cards g4">
+        <div class="card" onclick="show('b12')">
+          <div class="card-label">Megaloblástica</div>
+          <div class="card-title">Def. de B12</div>
+          <div class="card-sub">+ Sintomas neurológicos · Neutrófilo hiperseg</div>
+        </div>
+        <div class="card" onclick="show('folato')">
+          <div class="card-label">Megaloblástica</div>
+          <div class="card-title">Def. de Folato</div>
+          <div class="card-sub">Álcool · Gestação · Má absorção</div>
+        </div>
+        <div class="card" onclick="show('medicamentos')">
+          <div class="card-label">Iatrogênica</div>
+          <div class="card-title">Medicamentos</div>
+          <div class="card-sub">Metotrexato · Hidroxiureia · AZT</div>
+        </div>
+        <div class="card" onclick="show('smds')">
+          <div class="card-label">Quando tudo normal</div>
+          <div class="card-title">SMD</div>
+          <div class="card-sub">Síndrome mielodisplásica · Biópsia de MO</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note pearl">
+      🌿 VCM alto dificilmente é anemia ferropriva. VCM baixo dificilmente é deficiência de B12. Os cortes não são perfeitos, mas orientam muito.
+    </div>
+  </div>
+
+  <!-- ══ ACHADOS CLÍNICOS ══ -->
+  <div class="step" style="margin-top:0.5rem">
+    <div class="step-head">
+      <span class="step-badge" style="background:#f4f0ea;color:#3a1a00">Clínica</span>
+      <span class="step-title">Reconhecimento de padrão — achados que fecham diagnóstico</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="cards g4">
+      <div class="card" onclick="show('coiloniquia')">
+        <div class="card-label">Unhas</div>
+        <div class="card-title">Coiloniquia</div>
+        <div class="card-sub">Unha em colher → ferropriva</div>
+      </div>
+      <div class="card" onclick="show('pica')">
+        <div class="card-label">Comportamento</div>
+        <div class="card-title">Pagofagia</div>
+        <div class="card-sub">Vontade de comer gelo → muito específico de ferropriva</div>
+      </div>
+      <div class="card" onclick="show('triade-b12')">
+        <div class="card-label">Neurológico</div>
+        <div class="card-title">Tríade da B12</div>
+        <div class="card-sub">Tontura · Parestesia simétrica · Distúrbio de marcha</div>
+      </div>
+      <div class="card" onclick="show('olw')">
+        <div class="card-label">Mucosa</div>
+        <div class="card-title">Telangiectasias</div>
+        <div class="card-sub">Osler-Weber-Rendu → ferropriva de difícil controle</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /flow -->
+
+<!-- ── PAINEL ── -->
+<div class="panel">
+  <div class="panel-empty" id="panel-empty">
+    <div class="icon">🩸</div>
+    <p>Clique em qualquer item para ver o raciocínio detalhado</p>
+  </div>
+  <div id="dp"></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const data = {
+  'retic-alto': {
+    tag: 'Passo 1 · Reticulócito elevado',
+    title: 'Fábrica Respondendo',
+    desc: 'Medula funcionando — mas hemácias estão sumindo.',
+    secs: [
+      { t: 'O que significa', items: [
+        'Medula óssea produzindo ativamente',
+        'Insumos presentes (ferro, B12, eritropoetina)',
+        'Hemácias sendo destruídas cedo (hemólise) ou perdidas (sangramento agudo)'
+      ]},
+      { t: 'Hemólise — marcadores', items: [
+        'Bilirrubina indireta elevada',
+        'LDH elevado',
+        'Haptoglobina baixa',
+        'Coombs direto positivo → hemólise autoimune',
+        'Esquizócitos → microangiopatia trombótica'
+      ]},
+      { t: 'Sangramento agudo', items: [
+        'História clara de perda volumosa',
+        'Hematêmese, melena, trauma',
+        'Reticulocitose proporcional à perda'
+      ]}
+    ],
+    pearl: 'Reticulócito muito alto (> 120k) quase sempre é hemólise ou sangramento agudo — não fica em zona cinza.'
+  },
+  'retic-baixo': {
+    tag: 'Passo 1 · Reticulócito baixo',
+    title: 'Fábrica Não Responde',
+    desc: 'Reticulócito normal diante de anemia já é anormal.',
+    secs: [
+      { t: 'Problema nos insumos', items: [
+        'Falta de ferro → ferropriva (VCM baixo)',
+        'Falta de B12 → megaloblástica (VCM alto)',
+        'Falta de folato → megaloblástica (VCM alto)',
+        'Falta de eritropoetina → doença renal crônica'
+      ]},
+      { t: 'Problema na fábrica (medula)', items: [
+        'Infiltração neoplásica (linfoma, leucemia, metástase)',
+        'Síndrome mielodisplásica',
+        'Aplasia de medula',
+        'Mielofibrose'
+      ]}
+    ]
+  },
+  hiperseg: {
+    tag: 'Passo 2 · Esfregaço',
+    title: 'Neutrófilo Hipersegmentado',
+    desc: 'Núcleo com 5 ou mais lobos. Clássico de deficiência de B12.',
+    secs: [
+      { t: 'Como identificar', items: [
+        'Normal: trilobulado (3 divisões do núcleo)',
+        'Hipersegmentado: 5 ou mais divisões',
+        'Critério: ≥ 5% no esfregaço para ser significativo',
+        'Células também maiores (megaloblasto)'
+      ]},
+      { t: 'Próximo passo', items: [
+        'Dosar B12 sérica diretamente',
+        'Lembrar: sintomas neurológicos podem preceder a anemia',
+        'Ausência de anemia não descarta deficiência de B12'
+      ]}
+    ],
+    pearl: 'Neutrófilos hipersegmentados em quantidade → ir direto na dosagem de B12. Não espere outros achados.'
+  },
+  'dacrіо': {
+    tag: 'Passo 2 · Esfregaço',
+    title: 'Dacriócito — Hemácia em Lágrima',
+    desc: 'Hemácia deformada ao passar por medula óssea fibrótica.',
+    secs: [
+      { t: 'Significado', items: [
+        'Clássico de mielofibrose (doença mieloproliferativa)',
+        'Nome: dacry (grego: lágrima) + cito (célula)',
+        'Sinal de ocupação ou fibrose da medula'
+      ]},
+      { t: 'Investigação', items: [
+        'Biópsia de medula óssea',
+        'Mutação JAK2 e outras associadas',
+        'Encaminhar à hematologia'
+      ]}
+    ]
+  },
+  esquizo: {
+    tag: 'Passo 2 · Urgência',
+    title: 'Esquizócito — Hemácia Fragmentada',
+    desc: 'Hemácias quebradas ao passar por microtrombos. Emergência.',
+    secs: [
+      { t: 'O que significa', items: [
+        'Microangiopatia trombótica (MAT)',
+        'Hemácias fragmentadas por obstrução em pequenos vasos',
+        'Sempre urgência diagnóstica e terapêutica'
+      ]},
+      { t: 'Doenças que causam MAT', items: [
+        'PTT — deficiência de ADAMTS13 → plasmaférese urgente',
+        'SHU — E. coli O157:H7 → suporte',
+        'MAT por gestação (HELLP), HTA maligna, medicamentos'
+      ]},
+      { t: 'Tríade da PTT', items: [
+        'Anemia hemolítica microangiopática',
+        'Plaquetopenia',
+        'Manifestações neurológicas e/ou renais'
+      ]}
+    ],
+    warn: 'PTT tem mortalidade alta sem plasmaférese precoce. Esquizócito = não pode esperar.'
+  },
+  ferropriva: {
+    tag: 'Passo 3 · VCM < 80',
+    title: 'Anemia Ferropriva',
+    desc: 'Causa mais comum de anemia no mundo. Sempre investigue por onde está perdendo ferro.',
+    secs: [
+      { t: 'Diagnóstico', items: [
+        'Ferritina < 30 ng/mL (sem inflamação) — alta sensibilidade',
+        'Saturação de transferrina < 20% (em estados inflamatórios)',
+        'Ferro sérico baixo + TIBC alto'
+      ]},
+      { t: 'Investigação da causa', items: [
+        'Mulher em idade fértil → sangramento menstrual primeiro',
+        'Homem ou pós-menopausa → TGI até prova em contrário',
+        'EDA + colonoscopia para sangramento oculto',
+        'Telangiectasia hemorrágica hereditária se sangramento difuso'
+      ]},
+      { t: 'Tratamento', items: [
+        'Ferro oral — várias formulações',
+        'Vitamina C e carne vermelha melhoram absorção',
+        'Chá, café e leite atrapalham — evitar junto ao suplemento',
+        'Tratar a causa base — não só repor ferro'
+      ]}
+    ],
+    warn: 'Anemia ferropriva no homem adulto = pesquisar sangramento oculto no TGI até prova em contrário.'
+  },
+  'dc-micro': {
+    tag: 'Passo 3 · VCM < 80',
+    title: 'Anemia de Doença Crônica',
+    desc: 'Inflamação bloqueia uso do ferro mesmo com estoques normais.',
+    secs: [
+      { t: 'Fisiopatologia', items: [
+        'Hepcidina elevada → bloqueia liberação de ferro dos estoques',
+        'Ferro sérico baixo mas ferritina normal ou alta',
+        'Saturação de transferrina < 20% sem ferropriva verdadeira'
+      ]},
+      { t: 'Causas', items: [
+        'IRC, insuficiência cardíaca, DPOC',
+        'Infecções crônicas (HIV, tuberculose)',
+        'Doenças autoimunes (AR, LES)',
+        'Neoplasias ativas'
+      ]}
+    ]
+  },
+  talassemia: {
+    tag: 'Passo 3 · VCM < 80',
+    title: 'Talassemia',
+    desc: 'Defeito genético nas cadeias de globina. VCM muito baixo com eritrocitose.',
+    secs: [
+      { t: 'Como suspeitar', items: [
+        'VCM muito baixo (< 70) com número de hemácias normal ou alto',
+        'Ferritina normal ou alta (ferro não é o problema)',
+        'História familiar de anemia',
+        'Origem mediterrânea, africana ou asiática'
+      ]},
+      { t: 'Diagnóstico', items: [
+        'Eletroforese de hemoglobina',
+        'Estudo molecular se necessário'
+      ]}
+    ]
+  },
+  sidero: {
+    tag: 'Passo 3 · VCM < 80 · Rara',
+    title: 'Anemia Sideroblástica',
+    desc: 'Defeito na síntese do heme. Ferro acumulado nas mitocôndrias.',
+    secs: [
+      { t: 'Quando suspeitar', items: [
+        'VCM baixo com ferro sérico paradoxalmente elevado',
+        'Ferritina alta',
+        'Sideroblastos em anel na biópsia de MO'
+      ]},
+      { t: 'Causas', items: [
+        'Congênita (rara)',
+        'Adquirida: álcool, isoniazida, cloranfenicol, chumbo'
+      ]}
+    ]
+  },
+  'dc-normo': {
+    tag: 'Passo 3 · VCM 80–100',
+    title: 'Anemia de Doença Crônica',
+    desc: 'Mais comumente normocítica. IRC é a causa clássica.',
+    secs: [
+      { t: 'Causas clássicas', items: [
+        'IRC — eritropoetina reduzida',
+        'Neoplasias em atividade',
+        'Doenças inflamatórias crônicas',
+        'Infecções crônicas'
+      ]},
+      { t: 'Tratamento na IRC', items: [
+        'Agentes estimuladores de eritropoese (AEE)',
+        'Ferro endovenoso frequentemente necessário',
+        'Tratar doença de base'
+      ]}
+    ]
+  },
+  hipotiroid: {
+    tag: 'Passo 3 · VCM 80–100',
+    title: 'Hipotireoidismo',
+    desc: 'Pode causar anemia normo ou macrocítica.',
+    secs: [
+      { t: 'Como suspeitar', items: [
+        'Fadiga, ganho de peso, intolerância ao frio, bradicardia',
+        'TSH elevado + T4 livre baixo',
+        'Anemia geralmente leve'
+      ]},
+      { t: 'Conduta', items: [
+        'Levotiroxina → anemia melhora com tratamento do hipotireoidismo'
+      ]}
+    ]
+  },
+  hemolise: {
+    tag: 'Passo 3 · VCM 80–100 · Reticulócito ↑',
+    title: 'Anemia Hemolítica',
+    desc: 'Morte precoce das hemácias. Reticulócito muito elevado.',
+    secs: [
+      { t: 'Marcadores laboratoriais', items: [
+        'Bilirrubina indireta elevada',
+        'LDH elevado',
+        'Haptoglobina baixa',
+        'Urobilinogênio urinário aumentado'
+      ]},
+      { t: 'Classificação por achado', items: [
+        'Coombs positivo → autoimune (AHAI)',
+        'Esquizócitos → MAT (PTT, SHU)',
+        'Esferócitos → esferocitose hereditária ou AHAI',
+        'Células falciformes → drepanocitose'
+      ]}
+    ]
+  },
+  medula: {
+    tag: 'Passo 3 · VCM 80–100',
+    title: 'Doença da Medula Óssea',
+    desc: 'Aplasia, infiltração neoplásica ou mielofibrose.',
+    secs: [
+      { t: 'Quando suspeitar', items: [
+        'Pancitopenia sem causa aparente',
+        'Dacriócitos no esfregaço (mielofibrose)',
+        'VCM alto sem B12/folato baixo (SMD)',
+        'Investigações habituais todas normais'
+      ]},
+      { t: 'Investigação', items: [
+        'Mielograma (aspirado de MO)',
+        'Biópsia de medula óssea',
+        'Imunofenotipagem e citogenética se indicado'
+      ]}
+    ]
+  },
+  b12: {
+    tag: 'Passo 3 · VCM > 100',
+    title: 'Deficiência de B12',
+    desc: 'Anemia megaloblástica. Pode haver sintomas neurológicos sem anemia.',
+    secs: [
+      { t: 'Tríade neurológica', items: [
+        'Tontura',
+        'Parestesia simétrica bilateral',
+        'Distúrbio de marcha (propriocepção comprometida)',
+        'Sintomas neurológicos podem preceder a anemia'
+      ]},
+      { t: 'Diagnóstico', items: [
+        'B12 sérica baixa',
+        'Neutrófilo hipersegmentado no esfregaço',
+        'Pode causar pancitopenia megaloblástica'
+      ]},
+      { t: 'Tratamento (com sintomas neurológicos)', items: [
+        'Cianocobalamina 1000 mcg IM a cada 48h por 15 dias',
+        'Manutenção: 1x/mês',
+        'Investigar causa: perniciosa, gastrectomia, bariátrica, Crohn'
+      ]}
+    ],
+    warn: 'Ausência de anemia NÃO descarta deficiência de B12. Se há sintomas neurológicos, dosar B12 diretamente.'
+  },
+  folato: {
+    tag: 'Passo 3 · VCM > 100',
+    title: 'Deficiência de Folato',
+    desc: 'Semelhante à B12 mas sem sintomas neurológicos clássicos.',
+    secs: [
+      { t: 'Causas', items: [
+        'Álcool — causa mais comum',
+        'Gestação — demanda aumentada',
+        'Má absorção (doença celíaca)',
+        'Metotrexato — antagonista de folato'
+      ]},
+      { t: 'Atenção importante', items: [
+        'Não causa degeneração subaguda da medula espinal',
+        'Repor folato sem B12 pode mascarar a anemia mas não trata o neurológico'
+      ]}
+    ]
+  },
+  medicamentos: {
+    tag: 'Passo 3 · VCM > 100',
+    title: 'Medicamentos que Causam Macrocitose',
+    desc: 'Revisar medicamentos antes de concluir investigação.',
+    secs: [
+      { t: 'Principais', items: [
+        'Metotrexato — antagonista de folato',
+        'Hidroxiureia — inibe síntese de DNA',
+        'Zidovudina (AZT) — antirretroviral',
+        'Álcool — efeito tóxico direto na medula'
+      ]}
+    ]
+  },
+  smds: {
+    tag: 'Passo 3 · VCM > 100',
+    title: 'Síndrome Mielodisplásica',
+    desc: 'Quando tudo deu normal na investigação da macrocítica → biópsia de medula.',
+    secs: [
+      { t: 'Quando suspeitar', items: [
+        'VCM alto sem B12, folato, álcool ou medicamento como causa',
+        'Pancitopenia sem explicação',
+        'Idoso com anemia progressiva',
+        'Displasia celular no esfregaço'
+      ]},
+      { t: 'Conduta', items: [
+        'Mielograma + biópsia de medula óssea',
+        'Citogenética (cariótipo)',
+        'Encaminhar à hematologia'
+      ]}
+    ]
+  },
+  coiloniquia: {
+    tag: 'Clínica · Reconhecimento',
+    title: 'Coiloniquia — Unha em Colher',
+    desc: 'Unha côncava. Alta especificidade para anemia ferropriva.',
+    secs: [
+      { t: 'Significado', items: [
+        'Deformidade da lâmina ungueal por deficiência de ferro',
+        'Reconhecimento de padrão: já orienta fortemente para ferropriva',
+        'Confirmar com ferritina e saturação de transferrina'
+      ]}
+    ],
+    pearl: 'Quando você vê coiloniquia, já sabe que provavelmente é ferropriva. O próximo passo é descobrir por onde está perdendo ferro.'
+  },
+  pica: {
+    tag: 'Clínica · Reconhecimento',
+    title: 'Pagofagia',
+    desc: 'Vontade de comer gelo. Altamente específico de anemia ferropriva.',
+    secs: [
+      { t: 'O que é', items: [
+        'Pica: vontade de comer substâncias não alimentares (terra, giz, argila)',
+        'Pagofagia: vontade específica de comer gelo — muito específico de ferropriva',
+        'Mecanismo não totalmente elucidado'
+      ]}
+    ],
+    pearl: 'Paciente relata querer comer gelo → suspeita forte de ferropriva. Um achado simples de anamnese que guia o diagnóstico.'
+  },
+  'triade-b12': {
+    tag: 'Clínica · Reconhecimento',
+    title: 'Tríade Neurológica da B12',
+    desc: 'Tontura + Parestesia simétrica + Distúrbio de marcha.',
+    secs: [
+      { t: 'Componentes', items: [
+        'Tontura',
+        'Parestesia simétrica e bilateral (formigamento)',
+        'Distúrbio de marcha — instabilidade, propriocepção'
+      ]},
+      { t: 'Pontos críticos', items: [
+        'Pode ocorrer sem anemia detectável',
+        'Degeneração combinada subaguda da medula espinal',
+        'Repor folato isolado não trata o quadro neurológico'
+      ]}
+    ],
+    warn: 'Parestesia bilateral + distúrbio de marcha → dosar B12 mesmo com hemograma normal.'
+  },
+  olw: {
+    tag: 'Clínica · Reconhecimento',
+    title: 'Osler-Weber-Rendu',
+    desc: 'Telangiectasia hemorrágica hereditária. Sangramento difuso → ferropriva recorrente.',
+    secs: [
+      { t: 'Características', items: [
+        'Pontinhos vermelhos em mucosa oral, nasal, gastrointestinal',
+        'Sangramento recorrente por múltiplos sítios',
+        'Hereditária — autossômica dominante',
+        'Anemia ferropriva de difícil controle'
+      ]},
+      { t: 'Diagnóstico', items: [
+        'Clínico — inspeção de mucosas e pele',
+        'História familiar',
+        'Rastreio de MAV pulmonares e cerebrais'
+      ]}
+    ]
+  }
+};
+
+function show(key) {
+  const d = data[key];
+  if (!d) return;
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('panel-empty').style.display = 'none';
+  const dp = document.getElementById('dp');
+  dp.classList.add('show');
+
+  let html = `
+    <span class="dp-tag">${d.tag}</span>
+    <div class="dp-title">${d.title}</div>
+    ${d.desc ? `<div class="dp-desc">${d.desc}</div>` : ''}
+  `;
+
+  if (d.secs) {
+    d.secs.forEach(s => {
+      html += `<div class="dp-section">
+        <div class="dp-section-title">${s.t}</div>
+        <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>`;
+    });
+  }
+
+  if (d.pearl) html += `<div class="dp-note pearl">🌿 ${d.pearl}</div>`;
+  if (d.warn)  html += `<div class="dp-note warn">⚠️ ${d.warn}</div>`;
+
+  dp.innerHTML = html;
+  dp.scrollTop = 0;
+}
+</script>
+</body>
+</html>
