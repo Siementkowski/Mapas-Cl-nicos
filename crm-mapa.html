@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM — Gerenciamento de Recursos em Crises</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #f9f7f4;
+  --paper: #ffffff;
+  --ink: #1a1814;
+  --ink2: #3d3a35;
+  --muted: #8a8580;
+  --border: #e0ddd8;
+  --border-strong: #b8b4ae;
+
+  --s1: #1a3a5c;   /* azul — Antes */
+  --s1-light: #edf2f8;
+  --s2: #1a4a2e;   /* verde — Reconhecer */
+  --s2-light: #eef4f0;
+  --s3: #4a2e00;   /* âmbar — Agir */
+  --s3-light: #fdf5e6;
+  --s4: #3a1a4a;   /* roxo — Manter */
+  --s4-light: #f3eef8;
+  --s5: #1a1814;   /* preto — Depois */
+  --s5-light: #f0edea;
+  --warn: #8b1a1a;
+  --warn-light: #f4eaea;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: var(--paper);
+  border-bottom: 2px solid var(--ink);
+  padding: 1.4rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.h-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.h-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+.h-note {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.flow {
+  overflow-y: auto;
+  padding: 2rem 2.5rem 4rem;
+  border-right: 1px solid var(--border);
+}
+
+/* CONCEITO */
+.concept {
+  background: var(--ink);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 1rem 1.4rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.concept-text {
+  font-family: 'Fraunces', serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+.concept-text strong { font-style: normal; font-weight: 600; }
+
+/* STEP */
+.step { margin-bottom: 1.75rem; }
+
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.step-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 0.25rem 0.65rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.step-divider { flex: 1; height: 1px; background: var(--border); }
+
+/* QUESTION */
+.question {
+  background: #fffbea;
+  border: 1px solid #f0e080;
+  padding: 0.75rem 1.1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 3px;
+}
+.q-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.q-text {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--ink2);
+  line-height: 1.4;
+}
+
+/* CARDS */
+.cards { display: grid; gap: 0.6rem; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.g4 { grid-template-columns: repeat(4,1fr); }
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-left: 3px solid;
+  border-radius: 3px;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+.card.active { box-shadow: 0 3px 16px rgba(0,0,0,0.1); background: #fdfcfb; }
+
+.card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.card-title {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 0.2rem;
+}
+.card-sub {
+  font-size: 0.72rem;
+  color: var(--ink2);
+  line-height: 1.4;
+  font-weight: 300;
+}
+
+/* Step colors — só borda esquerda */
+.s1 .step-badge { background: var(--s1-light); color: var(--s1); }
+.s1 .card { border-left-color: var(--s1); }
+.s2 .step-badge { background: var(--s2-light); color: var(--s2); }
+.s2 .card { border-left-color: var(--s2); }
+.s3 .step-badge { background: var(--s3-light); color: var(--s3); }
+.s3 .card { border-left-color: var(--s3); }
+.s4 .step-badge { background: var(--s4-light); color: var(--s4); }
+.s4 .card { border-left-color: var(--s4); }
+.s5 .step-badge { background: var(--s5-light); color: var(--s5); }
+.s5 .card { border-left-color: var(--s5); }
+
+.card.warn-c { border-left-color: var(--warn); background: var(--warn-light); }
+.card.warn-c .card-title { color: var(--warn); }
+
+/* NOTES */
+.note {
+  border-left: 3px solid;
+  padding: 0.65rem 1rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  margin: 0.6rem 0;
+  border-radius: 0 3px 3px 0;
+  background: var(--paper);
+  color: var(--ink2);
+}
+.note.pearl { border-color: var(--s2); }
+.note.warn  { border-color: var(--warn); color: var(--warn); background: var(--warn-light); }
+
+/* SETA ENTRE FASES */
+.phase-arrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0 1.5rem;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.phase-arrow::before, .phase-arrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* PANEL */
+.panel {
+  background: var(--paper);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.panel-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--muted);
+  gap: 0.75rem;
+  padding: 2rem;
+}
+.panel-empty .icon { font-size: 1.6rem; opacity: 0.2; }
+.panel-empty p { font-size: 0.76rem; line-height: 1.6; max-width: 160px; }
+
+#dp { display: none; padding: 1.5rem; }
+#dp.show { display: block; }
+
+.dp-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.dp-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 0.25rem;
+}
+.dp-desc {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  font-style: italic;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+.dp-section { margin-bottom: 1rem; }
+.dp-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+.dp-section ul { list-style: none; display: flex; flex-direction: column; gap: 0.28rem; }
+.dp-section ul li {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  padding-left: 0.85rem;
+  position: relative;
+  color: var(--ink2);
+}
+.dp-section ul li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--border-strong);
+  font-size: 0.65rem;
+  top: 0.05rem;
+}
+.dp-note {
+  border-left: 2px solid;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  border-radius: 0 2px 2px 0;
+}
+.dp-note.pearl { border-color: var(--s2); color: var(--s2); background: var(--s2-light); }
+.dp-note.warn  { border-color: var(--warn); color: var(--warn); background: var(--warn-light); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h-title">CRM — Gerenciamento de Recursos em Crises</div>
+    <div class="h-sub">Crisis Resource Management · Competências não técnicas na emergência</div>
+  </div>
+  <div class="h-note">Clique em qualquer item para detalhar</div>
+</header>
+
+<div class="main">
+<div class="flow">
+
+  <!-- CONCEITO -->
+  <div class="concept">
+    <div class="concept-text">
+      <strong>70% dos erros na emergência são humanos. Desses, 80% são falhas de comunicação.</strong>
+      CRM são as competências não técnicas para trabalhar em equipe numa situação de crise.
+    </div>
+  </div>
+
+  <!-- ═══ FASE 1 — ANTES ═══ -->
+  <div class="step s1">
+    <div class="step-head">
+      <span class="step-badge">Fase 1 · Antes da Crise</span>
+      <span class="step-title">Prepare o ambiente antes de precisar</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Princípio</div>
+      <div class="q-text">"Ambiente não familiar é um denominador do desastre. Conheça seu espaço antes que o caos chegue."</div>
+    </div>
+
+    <div class="cards g3">
+      <div class="card" onclick="show('material')">
+        <div class="card-label">Ambientação</div>
+        <div class="card-title">Conheça o material</div>
+        <div class="card-sub">Saiba o que há em cada gaveta do carrinho. Localização de drogas, desfibrilador, oxigênio.</div>
+      </div>
+      <div class="card" onclick="show('equipamento')">
+        <div class="card-label">Check-list</div>
+        <div class="card-title">Teste o equipamento</div>
+        <div class="card-sub">No início de cada plantão. Lâmpada queimada não pode ser descoberta na hora da intubação.</div>
+      </div>
+      <div class="card" onclick="show('recursos')">
+        <div class="card-label">Rede de apoio</div>
+        <div class="card-title">Conheça seus recursos extras</div>
+        <div class="card-sub">Quem é o "guru" que pode ajudar? Anestesista, emergencista sênior, especialista de plantão.</div>
+      </div>
+    </div>
+
+    <div class="note pearl">
+      🌿 Os 7 denominadores do desastre começam com ambiente não familiar. Prevenir é mais fácil que improvisar numa crise.
+    </div>
+  </div>
+
+  <div class="phase-arrow">↓ crise instalada</div>
+
+  <!-- ═══ FASE 2 — RECONHECER ═══ -->
+  <div class="step s2">
+    <div class="step-head">
+      <span class="step-badge">Fase 2 · Reconhecer</span>
+      <span class="step-title">Identifique a crise e assuma a liderança</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Princípio</div>
+      <div class="q-text">"Quem está no comando? O líder precisa ser reconhecido pela equipe imediatamente."</div>
+    </div>
+
+    <div class="cards g2">
+      <div class="card" onclick="show('lider')">
+        <div class="card-label">Liderança</div>
+        <div class="card-title">Assuma o comando</div>
+        <div class="card-sub">Líder não precisa ser o mais experiente — precisa ser reconhecido. Posicione-se de forma que todos vejam e ouçam.</div>
+      </div>
+      <div class="card" onclick="show('ajuda')">
+        <div class="card-label">Primeira ação</div>
+        <div class="card-title">Peça ajuda cedo</div>
+        <div class="card-sub">Chamar ajuda nunca é fraqueza. Chamar tarde é erro. Se pode precisar, chame agora.</div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      ⚠️ 7 denominadores do desastre: ambiente não familiar · falha em pedir ajuda · falha de comunicação · fixação · falta de liderança · falta de trabalho em equipe · falha de atenção.
+    </div>
+  </div>
+
+  <div class="phase-arrow">↓ equipe organizada</div>
+
+  <!-- ═══ FASE 3 — AGIR ═══ -->
+  <div class="step s3">
+    <div class="step-head">
+      <span class="step-badge">Fase 3 · Agir</span>
+      <span class="step-title">Distribua tarefas e comunique com clareza</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Princípio</div>
+      <div class="q-text">"Pensado ≠ falado. Falado ≠ ouvido. Ouvido ≠ entendido. Entendido ≠ feito."</div>
+    </div>
+
+    <div class="cards g3">
+      <div class="card" onclick="show('distribui')">
+        <div class="card-label">Gestão de equipe</div>
+        <div class="card-title">Distribua tarefas com nome</div>
+        <div class="card-sub">"João, faça o acesso. Maria, prepare a adrenalina." Sem nome = ninguém sente responsabilidade.</div>
+      </div>
+      <div class="card" onclick="show('circulo')">
+        <div class="card-label">Comunicação</div>
+        <div class="card-title">Feche o círculo</div>
+        <div class="card-sub">Loop fechado: você fala → pessoa repete → você confirma. Garante que a tarefa foi ouvida e entendida.</div>
+      </div>
+      <div class="card warn-c" onclick="show('fixacao')">
+        <div class="card-label">⚠️ Armadilha</div>
+        <div class="card-title">Evite a fixação</div>
+        <div class="card-sub">Fixar num diagnóstico e ignorar sinais contrários. Mantenha o modelo mental aberto.</div>
+      </div>
+    </div>
+
+    <div class="cards g2" style="margin-top:0.6rem">
+      <div class="card" onclick="show('10seg')">
+        <div class="card-label">Técnica · Pausa</div>
+        <div class="card-title">Regra dos 10 segundos para 10 minutos</div>
+        <div class="card-sub">Para tudo por 10 segundos, respira, organiza o pensamento. Evita decisões impulsivas que custam minutos.</div>
+      </div>
+      <div class="card" onclick="show('queijo')">
+        <div class="card-label">Teoria do erro</div>
+        <div class="card-title">Queijo suíço</div>
+        <div class="card-sub">Acidentes nunca têm uma causa só. As barreiras têm buracos — quando se alinham, o desastre acontece.</div>
+      </div>
+    </div>
+
+    <div class="note pearl">
+      🌿 Líder na crise: não execute tarefas manuais. Seu papel é pensar, observar e coordenar. Quem está com a mão no paciente não consegue ver o todo.
+    </div>
+  </div>
+
+  <div class="phase-arrow">↓ atendimento em curso</div>
+
+  <!-- ═══ FASE 4 — MANTER ═══ -->
+  <div class="step s4">
+    <div class="step-head">
+      <span class="step-badge">Fase 4 · Manter</span>
+      <span class="step-title">Sustente o modelo mental compartilhado</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Princípio</div>
+      <div class="q-text">"Todo mundo precisa estar na mesma página. Atualize a equipe de tempo em tempo."</div>
+    </div>
+
+    <div class="cards g3">
+      <div class="card" onclick="show('modelo')">
+        <div class="card-label">Consciência situacional</div>
+        <div class="card-title">Modelo mental compartilhado</div>
+        <div class="card-sub">Todos sabem o que está acontecendo, o que foi feito e qual o plano. Ninguém age no escuro.</div>
+      </div>
+      <div class="card" onclick="show('update')">
+        <div class="card-label">Comunicação periódica</div>
+        <div class="card-title">Updates regulares</div>
+        <div class="card-sub">A cada 10 minutos ou em mudanças importantes. "Pessoal, situação atual é essa, próximo passo é esse."</div>
+      </div>
+      <div class="card" onclick="show('prioridades')">
+        <div class="card-label">Reavaliação</div>
+        <div class="card-title">Revise as prioridades</div>
+        <div class="card-sub">Conforme o quadro evolui, o objetivo pode mudar. O que era urgente pode deixar de ser — e vice-versa.</div>
+      </div>
+    </div>
+
+    <div class="note pearl">
+      🌿 Estudo do Afeganistão: cirurgias de controle de danos com protocolo de update a cada 10 min tiveram melhores desfechos. O anestesista ditava o tempo e o cirurgião atualizava o plano.
+    </div>
+  </div>
+
+  <div class="phase-arrow">↓ crise encerrada</div>
+
+  <!-- ═══ FASE 5 — DEPOIS ═══ -->
+  <div class="step s5">
+    <div class="step-head">
+      <span class="step-badge">Fase 5 · Depois</span>
+      <span class="step-title">Debriefing — aprender com o que aconteceu</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">Princípio</div>
+      <div class="q-text">"Não é para apontar dedo. É para melhorar para o próximo paciente."</div>
+    </div>
+
+    <div class="cards g2">
+      <div class="card" onclick="show('hot')">
+        <div class="card-label">Imediato</div>
+        <div class="card-title">Hot Debriefing</div>
+        <div class="card-sub">Logo após o evento — memória mais fresca. Rápido, mas com segurança psicológica.</div>
+      </div>
+      <div class="card" onclick="show('cold')">
+        <div class="card-label">Diferido</div>
+        <div class="card-title">Cold Debriefing</div>
+        <div class="card-sub">Horas ou dias depois — reunião clínica, café. Para casos que precisam de mais reflexão.</div>
+      </div>
+    </div>
+
+    <div class="cards g3" style="margin-top:0.6rem">
+      <div class="card" onclick="show('psico')">
+        <div class="card-label">Ambiente seguro</div>
+        <div class="card-title">Segurança psicológica</div>
+        <div class="card-sub">Ninguém pode ser punido por falar. Sem isso, o debriefing não funciona.</div>
+      </div>
+      <div class="card" onclick="show('perguntas')">
+        <div class="card-label">Estrutura</div>
+        <div class="card-title">Perguntas do debriefing</div>
+        <div class="card-sub">O que aconteceu? Como você está? O que te incomodou? O que fizemos bem? O que faríamos diferente?</div>
+      </div>
+      <div class="card" onclick="show('licoes')">
+        <div class="card-label">Resultado</div>
+        <div class="card-title">Lições práticas</div>
+        <div class="card-sub">Mudanças concretas que podem ser implementadas agora. Pequenas melhorias que salvam o próximo paciente.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /flow -->
+
+<!-- PANEL -->
+<div class="panel">
+  <div class="panel-empty" id="panel-empty">
+    <div class="icon">✈️</div>
+    <p>Clique em qualquer item para ver o raciocínio detalhado</p>
+  </div>
+  <div id="dp"></div>
+</div>
+</div>
+
+<script>
+const data = {
+  material: {
+    tag: 'Fase 1 · Antes',
+    title: 'Conheça o Material',
+    desc: 'Saber onde está o material antes da crise é uma barreira contra o desastre.',
+    secs: [
+      { t: 'O que fazer', items: [
+        'Saiba o que há em cada gaveta do carrinho de parada',
+        'Conheça a localização das drogas de emergência',
+        'Familiarize-se com o desfibrilador — como ligar, como usar as pás',
+        'Saiba onde está o oxigênio, o laringoscópio, os tubos',
+        'Leia a lista de material mesmo que o carrinho esteja lacrado'
+      ]},
+      { t: 'Por que isso importa', items: [
+        'Ambiente não familiar = 1º denominador do desastre',
+        'Na crise, procurar material rouba atenção e tempo',
+        'A equipe perde confiança no líder que não sabe onde está o material'
+      ]}
+    ],
+    pearl: 'Abra o carrinho antes do plantão. Converse com a enfermagem. Conheça o espaço como se fosse seu.'
+  },
+  equipamento: {
+    tag: 'Fase 1 · Antes',
+    title: 'Teste o Equipamento',
+    desc: 'Lâmpada queimada não pode ser descoberta na hora da intubação.',
+    secs: [
+      { t: 'Check-list do início do plantão', items: [
+        'Testar o laringoscópio — a lâmpada funciona?',
+        'Testar o desfibrilador — liga? faz descarga de teste?',
+        'Verificar pressão do O₂ — tem gás suficiente?',
+        'Checar validade das drogas',
+        'Confirmar que o aspirador funciona'
+      ]},
+      { t: 'Princípio', items: [
+        'Equipamento com defeito numa crise = mais uma fatia de queijo com buraco',
+        'Testar demora 5 minutos — não testar pode custar uma vida'
+      ]}
+    ]
+  },
+  recursos: {
+    tag: 'Fase 1 · Antes',
+    title: 'Conheça Seus Recursos Extras',
+    desc: 'Saber quem chamar antes de precisar economiza tempo crítico.',
+    secs: [
+      { t: 'Exemplos de recursos extras', items: [
+        'Anestesista de plantão — via aérea difícil',
+        'Emergencista sênior — dúvida na conduta',
+        'Hematologista, cardiologista, intensivista de sobreaviso',
+        'Equipamento de via aérea difícil — onde fica?',
+        'Hemotransfusão — qual o fluxo no seu serviço?'
+      ]},
+      { t: 'Como preparar', items: [
+        'No início do plantão: quem está de sobreaviso hoje?',
+        'Salvar contatos de quem pode ajudar',
+        'Conhecer o fluxo de acionamento — quem liga para quem?'
+      ]}
+    ],
+    pearl: 'Chamar ajuda cedo nunca é fraqueza. É inteligência tática.'
+  },
+  lider: {
+    tag: 'Fase 2 · Reconhecer',
+    title: 'Assuma a Liderança',
+    desc: 'O líder precisa ser visto, ouvido e reconhecido pela equipe.',
+    secs: [
+      { t: 'O que define o líder na crise', items: [
+        'Não precisa ser o mais experiente — precisa ser o mais organizado naquele momento',
+        'Posicione-se de forma que todos vejam e ouçam',
+        'Não execute tarefas manuais — seu papel é pensar e coordenar',
+        'Delegue tarefas com nomes específicos'
+      ]},
+      { t: 'O que o líder faz', items: [
+        'Mantém o modelo mental do quadro geral',
+        'Distribui tarefas com clareza',
+        'Monitora a execução sem se prender a um ponto só',
+        'Pede ajuda cedo se necessário',
+        'Atualiza a equipe periodicamente'
+      ]}
+    ],
+    warn: 'Líder que coloca a mão no paciente perde a visão do todo. Delegue a execução e mantenha a liderança.'
+  },
+  ajuda: {
+    tag: 'Fase 2 · Reconhecer',
+    title: 'Peça Ajuda Cedo',
+    desc: 'Falha em pedir ajuda é o 2º denominador do desastre.',
+    secs: [
+      { t: 'Quando pedir ajuda', items: [
+        'Se pode precisar → chame agora. Não espere ter certeza.',
+        'Via aérea difícil? Chame o anestesista antes de tentar',
+        'Dúvida na conduta? Ligue para o sênior',
+        'Paciente instabilizando? Acione a equipe completa'
+      ]},
+      { t: 'Por que as pessoas não pedem ajuda', items: [
+        'Medo de parecer incompetente',
+        'Cultura de que pedir ajuda é fraqueza',
+        'Subestimação da gravidade'
+      ]}
+    ],
+    pearl: 'Na aviação: co-piloto que percebeu problema e avisou o piloto salvou o avião. O que não avisou caiu. Na medicina é igual.'
+  },
+  distribui: {
+    tag: 'Fase 3 · Agir',
+    title: 'Distribua Tarefas com Nome',
+    desc: '"Alguém faz o acesso" = ninguém faz o acesso.',
+    secs: [
+      { t: 'Como fazer', items: [
+        'Sempre direcionar pelo nome: "João, faça o acesso venoso"',
+        'Uma tarefa por pessoa por vez',
+        'Confirme que a pessoa entendeu antes de seguir',
+        'Reatribua se a pessoa estiver sobrecarregada'
+      ]},
+      { t: 'O que evitar', items: [
+        'Tarefas sem destinatário — ninguém se sente responsável',
+        'Dar muitas tarefas para uma pessoa ao mesmo tempo',
+        'Assumir que alguém fez sem confirmar'
+      ]}
+    ],
+    warn: 'Sem nome na tarefa = sem responsável. É a principal causa de "achei que fulano tinha feito".'
+  },
+  circulo: {
+    tag: 'Fase 3 · Agir',
+    title: 'Feche o Círculo de Comunicação',
+    desc: 'Loop fechado: falar → repetir → confirmar.',
+    secs: [
+      { t: 'Como funciona', items: [
+        '1. Líder fala: "Maria, 1mg de adrenalina EV agora"',
+        '2. Maria repete: "1mg de adrenalina EV, entendido"',
+        '3. Líder confirma: "Correto"',
+        '4. Maria executa e informa: "Adrenalina administrada"'
+      ]},
+      { t: 'Por que é importante', items: [
+        'Pensado ≠ falado',
+        'Falado ≠ ouvido',
+        'Ouvido ≠ entendido',
+        'Entendido ≠ feito',
+        'O círculo fecha todas essas lacunas de uma vez'
+      ]}
+    ],
+    pearl: 'Loop fechado parece lento — mas é mais rápido do que corrigir um erro cometido por comunicação falha.'
+  },
+  fixacao: {
+    tag: 'Fase 3 · Armadilha',
+    title: 'Fixação — O Viés Mais Perigoso da Crise',
+    desc: 'Fixar num diagnóstico e ignorar sinais que contradizem. Causa morte.',
+    secs: [
+      { t: 'Como a fixação acontece', items: [
+        'Primeira hipótese parece óbvia → toda atenção vai para ela',
+        'Sinais contrários são minimizados ou ignorados',
+        'Equipe começa a confirmar o que o líder quer ouvir',
+        '"Âncora diagnóstica" — o primeiro diagnóstico define tudo'
+      ]},
+      { t: 'Como evitar', items: [
+        'Regra dos 10 segundos: pare, respire, reavalie',
+        'Pergunte ativamente: "O que mais poderia ser isso?"',
+        'Encoraje a equipe a falar quando algo não encaixa',
+        'Revisão periódica das hipóteses durante o atendimento'
+      ]}
+    ],
+    warn: 'Piloto que ignorou o passageiro que percebeu que o sol estava no lado errado. O avião caiu. Na medicina: o paciente que não encaixa no diagnóstico é o que você mais precisa ouvir.'
+  },
+  '10seg': {
+    tag: 'Fase 3 · Técnica',
+    title: 'Regra dos 10 Segundos para 10 Minutos',
+    desc: 'Uma pausa de 10 segundos pode evitar erros que custam 10 minutos para corrigir.',
+    secs: [
+      { t: 'Como aplicar', items: [
+        'Quando sentir que está perdendo o controle da situação',
+        'Quando a equipe parece desorientada',
+        'Quando surge uma dúvida importante na conduta',
+        'Pare fisicamente, respire, olhe para o quadro geral',
+        'Reoriente a equipe antes de continuar'
+      ]},
+      { t: 'O que acontece sem essa pausa', items: [
+        'Decisões impulsivas sob estresse',
+        'Erros que se acumulam',
+        'Equipe que perde o fio condutor',
+        'Líder que perde a consciência situacional'
+      ]}
+    ]
+  },
+  queijo: {
+    tag: 'Teoria do Erro',
+    title: 'Teoria do Queijo Suíço',
+    desc: 'Acidentes nunca têm uma causa só — são múltiplas barreiras que falham ao mesmo tempo.',
+    secs: [
+      { t: 'O modelo', items: [
+        'Cada fatia de queijo = uma barreira de proteção',
+        'Cada buraco = uma falha potencial',
+        'Acidente: buracos de várias fatias se alinham',
+        'Prevenção: mais fatias (mais barreiras) ou menos buracos (menos falhas)'
+      ]},
+      { t: 'Na prática clínica', items: [
+        'Ambiente não familiar + falta de checklist + comunicação ruim = desastre',
+        'Cada princípio do CRM é uma fatia de queijo',
+        'Quanto mais princípios aplicados, menor a chance de acidente'
+      ]}
+    ],
+    pearl: 'Nenhum erro é culpa de uma pessoa só. O sistema permitiu que os buracos se alinhassem. O debriefing existe para fechar esses buracos.'
+  },
+  modelo: {
+    tag: 'Fase 4 · Manter',
+    title: 'Modelo Mental Compartilhado',
+    desc: 'Todos na equipe precisam ter a mesma visão do que está acontecendo.',
+    secs: [
+      { t: 'O que é', items: [
+        'Representação mental comum da situação atual',
+        'Todos sabem: o que foi feito, o que está sendo feito, qual o plano',
+        'Ninguém age no escuro ou com informação desatualizada'
+      ]},
+      { t: 'Como construir', items: [
+        'Briefing inicial quando a equipe chega — "esse é o cenário"',
+        'Updates regulares durante o atendimento',
+        'Qualquer membro pode e deve atualizar o modelo se perceber algo diferente'
+      ]}
+    ]
+  },
+  update: {
+    tag: 'Fase 4 · Manter',
+    title: 'Updates Regulares',
+    desc: 'De tempo em tempo, parar para compartilhar o estado atual com toda a equipe.',
+    secs: [
+      { t: 'Como fazer', items: [
+        'A cada 10 minutos ou em mudanças importantes do quadro',
+        '"Pessoal, situação atual: PA está estabilizando, acesso obtido, aguardando exames. Próximo passo: reavaliação em 5 minutos"',
+        'Linguagem clara, sem jargão desnecessário',
+        'Confirmar que todos entenderam'
+      ]},
+      { t: 'Referência', items: [
+        'Protocolo do Afeganistão — cirurgias de controle de danos',
+        'Update a cada 10 min pelo anestesista',
+        'Melhora documentada nos desfechos cirúrgicos'
+      ]}
+    ]
+  },
+  prioridades: {
+    tag: 'Fase 4 · Manter',
+    title: 'Revisão de Prioridades',
+    desc: 'O objetivo pode mudar conforme o quadro evolui.',
+    secs: [
+      { t: 'Por que rever', items: [
+        'O que era urgente no minuto 0 pode não ser mais no minuto 20',
+        'Novos dados podem mudar completamente o plano',
+        'Equipe fixada no plano original pode perder a janela de oportunidade'
+      ]},
+      { t: 'Quando rever', items: [
+        'A cada update regular',
+        'Quando chega resultado de exame importante',
+        'Quando a condição do paciente muda',
+        'Quando alguém da equipe levanta uma dúvida pertinente'
+      ]}
+    ]
+  },
+  hot: {
+    tag: 'Fase 5 · Depois',
+    title: 'Hot Debriefing',
+    desc: 'Logo após o evento — memória mais fresca, impacto maior.',
+    secs: [
+      { t: 'Quando fazer', items: [
+        'Imediatamente após o encerramento do caso',
+        'Enquanto os detalhes ainda estão vivos na memória',
+        'Pode ser rápido — 5 a 10 minutos'
+      ]},
+      { t: 'Atenção', items: [
+        'Se alguém está visivelmente abalado, não force a participação imediata',
+        'Segurança psicológica primeiro — sem isso o debriefing não funciona',
+        'Se não for possível agora, marque um cold debriefing'
+      ]}
+    ]
+  },
+  cold: {
+    tag: 'Fase 5 · Depois',
+    title: 'Cold Debriefing',
+    desc: 'Horas ou dias depois — mais elaborado, com mais reflexão.',
+    secs: [
+      { t: 'Quando usar', items: [
+        'Casos muito graves que precisam de mais tempo para processar',
+        'Quando não foi possível fazer o hot debriefing',
+        'Reuniões clínicas, discussões de caso, momento do café'
+      ]},
+      { t: 'Vantagens', items: [
+        'Mais tempo para reflexão',
+        'Participantes emocionalmente mais estáveis',
+        'Permite pesquisa e revisão de literatura antes da discussão'
+      ]}
+    ]
+  },
+  psico: {
+    tag: 'Fase 5 · Depois',
+    title: 'Segurança Psicológica',
+    desc: 'Sem ela, ninguém fala a verdade no debriefing.',
+    secs: [
+      { t: 'O que é', items: [
+        'Ambiente onde é seguro falar o que aconteceu sem medo de punição',
+        'Erros são vistos como oportunidade de aprendizado, não como falha pessoal',
+        'Facilitador deixa claro desde o início: não é para achar culpado'
+      ]},
+      { t: 'Como criar', items: [
+        'Facilitador não precisa ser o líder da equipe — pode ser qualquer um',
+        'Começar com: "Estamos aqui para melhorar para o próximo paciente"',
+        'Nunca usar o debriefing para punir ou constranger'
+      ]}
+    ],
+    warn: 'Debriefing sem segurança psicológica vira tribunal. As pessoas aprendem a calar — e os erros se repetem.'
+  },
+  perguntas: {
+    tag: 'Fase 5 · Estrutura',
+    title: 'Perguntas do Debriefing',
+    desc: 'Cinco perguntas que estruturam a reflexão.',
+    secs: [
+      { t: 'As cinco perguntas', items: [
+        '1. O que aconteceu? — construir o modelo mental conjunto',
+        '2. Como você está? — cuidar da equipe emocionalmente',
+        '3. O que te incomodou? — trazer à tona o que ficou',
+        '4. O que fizemos bem? — reforçar o que funcionou',
+        '5. O que faríamos diferente? — aprendizado concreto'
+      ]},
+      { t: 'Ordem importa', items: [
+        'Começar pelo emocional antes do técnico',
+        'Terminar sempre com algo positivo + lição concreta',
+        'Não pular direto para "o que erramos"'
+      ]}
+    ]
+  },
+  licoes: {
+    tag: 'Fase 5 · Resultado',
+    title: 'Lições Práticas',
+    desc: 'O debriefing só vale se gera mudança real.',
+    secs: [
+      { t: 'Exemplos reais', items: [
+        'Oxigênio guardado no estoque → mover uma bala para a sala de atendimento',
+        'Comunicação falhou → treinar loop fechado na próxima simulação',
+        'Equipamento com defeito → check-list no início do plantão passa a ser obrigatório'
+      ]},
+      { t: 'Princípio', items: [
+        'Isso não é para mim, não é para você — é para o próximo paciente',
+        'Pequenas mudanças acumuladas = grande diferença em segurança do paciente'
+      ]}
+    ],
+    pearl: 'O objetivo do CRM é fechar os buracos no queijo suíço antes que eles se alinhem no próximo caso.'
+  }
+};
+
+function show(key) {
+  const d = data[key];
+  if (!d) return;
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('panel-empty').style.display = 'none';
+  const dp = document.getElementById('dp');
+  dp.classList.add('show');
+
+  let html = `
+    <span class="dp-tag">${d.tag}</span>
+    <div class="dp-title">${d.title}</div>
+    ${d.desc ? `<div class="dp-desc">${d.desc}</div>` : ''}
+  `;
+
+  if (d.secs) {
+    d.secs.forEach(s => {
+      html += `<div class="dp-section">
+        <div class="dp-section-title">${s.t}</div>
+        <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>`;
+    });
+  }
+
+  if (d.pearl) html += `<div class="dp-note pearl">🌿 ${d.pearl}</div>`;
+  if (d.warn)  html += `<div class="dp-note warn">⚠️ ${d.warn}</div>`;
+
+  dp.innerHTML = html;
+  dp.scrollTop = 0;
+}
+</script>
+</body>
+</html>
