@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Fluxograma — Ca de Próstata</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  .chart-wrapper {
+    background: #ffffff;
+    border: 1.5px solid #cdd8e3;
+    border-radius: 10px;
+    padding: 36px 40px 48px 40px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  }
+
+  .chart-container {
+    position: relative;
+    width: 580px;
+    height: 622px;
+  }
+
+  .arrows-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .node {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    border-radius: 5px;
+    z-index: 1;
+  }
+
+  .navy    { background: #1a3a5c; color: #fff; }
+  .teal    { background: #1a7a8a; color: #fff; }
+  .accent  { background: #e8892a; color: #fff; }
+  .light   { background: #daedf2; color: #1a3a5c; border: 1.5px solid #1a7a8a; }
+  .outline { background: #fff;    color: #1a3a5c; border: 2px solid #1a3a5c; }
+</style>
+</head>
+<body>
+<div class="chart-wrapper">
+  <div class="chart-container">
+
+    <!-- N1: Ca de Próstata  cx=290 bot=40 -->
+    <div id="n1" class="node navy"
+         style="width:180px;height:40px;left:200px;top:0;">
+      Ca de Próstata
+    </div>
+
+    <!-- N2: Localizado  cx=110 bot=118 -->
+    <div id="n2" class="node teal"
+         style="width:140px;height:38px;left:40px;top:80px;">
+      Localizado
+    </div>
+
+    <!-- N3: Metastático  cx=460 bot=118 right=530 -->
+    <div id="n3" class="node teal"
+         style="width:140px;height:38px;left:390px;top:80px;">
+      Metastático
+    </div>
+
+    <!-- N4: Sobrevida >10-15 anos?  left=155 right=365 cy=180 bot=202 -->
+    <div id="n4" class="node accent"
+         style="width:210px;height:44px;left:155px;top:158px;font-size:13.5px;">
+      Sobrevida &gt;10-15 anos?
+    </div>
+
+    <!-- N5: Sim  cx=95 top=272 bot=308 -->
+    <div id="n5" class="node navy"
+         style="width:110px;height:36px;left:40px;top:272px;">
+      Sim
+    </div>
+
+    <!-- N6: Não  cx=445 top=272 bot=308 left=390 right=500 -->
+    <div id="n6" class="node navy"
+         style="width:110px;height:36px;left:390px;top:272px;">
+      Não
+    </div>
+
+    <!-- N7: Risco  cx=175 top=358 bot=394 -->
+    <div id="n7" class="node light"
+         style="width:150px;height:36px;left:100px;top:358px;font-size:14px;">
+      Risco
+    </div>
+
+    <!-- N8: Watchful Waiting  cx=453 top=390 bot=442 left=388 right=518 -->
+    <div id="n8" class="node navy"
+         style="width:130px;height:52px;left:388px;top:390px;">
+      Watchful<br>Waiting
+    </div>
+
+    <!-- N9: Baixo  cx=90 top=450 bot=486 -->
+    <div id="n9" class="node teal"
+         style="width:100px;height:36px;left:40px;top:450px;">
+      Baixo
+    </div>
+
+    <!-- N10: Intermediário ou alto  cx=250 top=444 bot=492 -->
+    <div id="n10" class="node teal"
+         style="width:120px;height:48px;left:190px;top:444px;font-size:12px;">
+      Intermediário<br>ou alto
+    </div>
+
+    <!-- N11  cx=82 top=550 bot=622 -->
+    <div id="n11" class="node outline"
+         style="width:120px;height:72px;left:22px;top:550px;font-size:11.5px;">
+      Vigilância Ativa<br>Prostatectomia<br>Radioterapia
+    </div>
+
+    <!-- N12  cx=248 top=550 bot=622 -->
+    <div id="n12" class="node outline"
+         style="width:140px;height:72px;left:178px;top:550px;font-size:11px;">
+      Prostatectomia<br>Radioterapia +<br>Bloqueio Hormonal
+    </div>
+
+    <svg class="arrows-svg">
+      <defs>
+        <marker id="arr" markerWidth="9" markerHeight="9"
+                refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="#1a3a5c"/>
+        </marker>
+      </defs>
+
+      <!-- C1: N1 bot(290,40) → N2 top(110,80) -->
+      <path d="M290,40 L290,60 L110,60 L110,80"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C2: N1 bot(290,40) → N3 top(460,80) -->
+      <path d="M290,40 L290,60 L460,60 L460,80"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C3: N2 bot(110,118) → N4 left-mid(155,180) -->
+      <path d="M110,118 L110,180 L155,180"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C4: N3 bot(460,118) → N8 right-mid(518,416)
+               Contorna N6 (right=500) pelo lado externo (x=550) -->
+      <path d="M460,118 L460,140 L550,140 L550,416 L518,416"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C5: N4 left-mid(155,180) → N5 top(95,272) -->
+      <path d="M155,180 L95,180 L95,272"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C6: N4 right-mid(365,180) → N6 top(445,272) -->
+      <path d="M365,180 L445,180 L445,272"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C7: N5 bot(95,308) → N7 top(175,358) -->
+      <path d="M95,308 L95,333 L175,333 L175,358"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C8: N6 bot(445,308) → N8 top(453,390) -->
+      <path d="M445,308 L445,349 L453,349 L453,390"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C9: N7 bot-left(155,394) → N9 top(90,450) -->
+      <path d="M155,394 L155,422 L90,422 L90,450"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C10: N7 bot-right(195,394) → N10 top(250,444) -->
+      <path d="M195,394 L195,422 L250,422 L250,444"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C11: N9 bot(90,486) → N11 top(82,550) -->
+      <path d="M90,486 L90,520 L82,520 L82,550"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- C12: N10 bot(250,492) → N12 top(248,550) -->
+      <path d="M250,492 L250,550"
+            fill="none" stroke="#1a3a5c" stroke-width="2" marker-end="url(#arr)"/>
+
+    </svg>
+  </div>
+</div>
+</body>
+</html>
