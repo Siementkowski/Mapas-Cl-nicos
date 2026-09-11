@@ -159,6 +159,9 @@ main { flex: 1; overflow-y: auto; display: flex; justify-content: center; paddin
 .dx-card h2 { font-size: 33px; font-weight: 700; margin-bottom: 2px; }
 .dx-card .dx-subtitle { font-size: 15px; color: var(--ink); margin-bottom: 14px; }
 .dx-image { margin: 4px 0 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.dx-image-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 4px 0 14px; }
+.dx-image-gallery .dx-image { margin: 0; }
+.dx-image-gallery .dx-image img { max-height: 160px; }
 .dx-image img { display: block; width: 100%; height: auto; max-height: 260px; object-fit: cover; }
 .dx-image-caption { font-size: 11px; color: var(--ink); padding: 6px 10px; background: var(--surface-2); font-weight: 600; }
 
@@ -354,7 +357,11 @@ const diagnoses = {
   sarampo: {
     title:'Sarampo', subtitle:'Paramyxovírus (Morbillivirus) · incubação 8–12 dias',
     accent:'var(--orange)', accentText:'var(--on-soft-orange)',
-    image:{src:'sarampo-koplik.png', caption:'Manchas de Köplik'},
+    images:[
+      {src:'sarampo-koplik.png', caption:'Manchas de Köplik'},
+      {src:'sarampo-exantema.png', caption:'Exantema morbiliforme generalizado'},
+      {src:'sarampo-convalescencia.png', caption:'Fase de convalescência — descamação fina'}
+    ],
     exantemaChar:'Morbiliforme, confluente, com descamação fina e furfurácea. Craniocaudal: face → pescoço → MMSS → MMII.',
     fases:[
       { t:'Fase Prodrômica', items:['Febre, rinorreia, tosse, conjuntivite (3–5 dias)','Ao final do pródromo surgem as manchas de Koplik'] },
@@ -373,7 +380,7 @@ const diagnoses = {
   rubeola: {
     title:'Rubéola', subtitle:'Togavírus · incubação 12–23 dias',
     accent:'var(--orange)', accentText:'var(--on-soft-orange)',
-    image:{src:'rubeola-forchheimer.png', caption:'Sinal de Forchheimer — petéquias na transição palato duro/mole'},
+    images:[{src:'rubeola-forchheimer.png', caption:'Sinal de Forchheimer — petéquias na transição palato duro/mole'}],
     exantemaChar:'Morbiliforme, não confluente, sem descamação. Progressão crânio-caudal, lesões bem esparsas.',
     fases:[
       { t:'Fase Prodrômica', items:['Febre baixa, adenomegalia (retroauricular, occipital e cervical)','Pode não haver pródromo','Sinal de Forchheimer: petéquias no palato'] },
@@ -386,6 +393,7 @@ const diagnoses = {
   subito: {
     title:'Exantema Súbito', subtitle:'Herpes-vírus 6 (e 7) · Roséola',
     accent:'var(--blue)', accentText:'var(--on-soft-blue)',
+    images:[{src:'subito-exantema.png', caption:'Exantema maculopapular após o término da febre'}],
     exantemaChar:'Maculopapular, não pruriginoso. Inicia no tronco, dissemina para face e extremidades. Fugaz, sem descamação.',
     fases:[
       { t:'Fase Prodrômica', items:['Febre alta (39–40°C) por 3–4 dias','Geralmente é apenas febre, sem outros sintomas'] },
@@ -398,6 +406,7 @@ const diagnoses = {
   eritema: {
     title:'Eritema Infeccioso', subtitle:'Parvovírus B19 · 5ª doença',
     accent:'var(--blue)', accentText:'var(--on-soft-blue)',
+    images:[{src:'eritema-esbofeteada.png', caption:'Face esbofeteada e exantema rendilhado no tronco'}],
     exantemaChar:'Face esbofeteada → exantema rendilhado/reticulado no tronco, pruriginoso, poupa palma e planta. Pode recidivar.',
     fases:[
       { t:'Fase Prodrômica', items:['Período livre de sintomas','Fase prodrômica inexistente ou inespecífica'] },
@@ -410,7 +419,7 @@ const diagnoses = {
   varicela: {
     title:'Varicela', subtitle:'Vírus varicela-zóster · Catapora',
     accent:'var(--mint)', accentText:'var(--on-soft-mint)',
-    image:{src:'varicela-progressao.png', caption:'Progressão da lesão (mácula → crosta) e distribuição do exantema'},
+    images:[{src:'varicela-progressao.png', caption:'Progressão da lesão (mácula → crosta) e distribuição do exantema'}],
     exantemaChar:'Polimorfismo regional: mácula → pápula → vesícula → pústula → crosta, tudo ao mesmo tempo. Progressão centrífuga, muito pruriginoso.',
     fases:[
       { t:'Fase Prodrômica', items:['Febre e mal-estar','Pode não haver pródromo','Contágio por aerossol'] },
@@ -431,7 +440,7 @@ const diagnoses = {
   maopeboca: {
     title:'Doença Mão-Pé-Boca', subtitle:'Coxsackie A16 (Enterovírus)',
     accent:'var(--mint)', accentText:'var(--on-soft-mint)',
-    image:{src:'maopeboca-lesoes.png', caption:'Lesões em mãos, pés, boca e nádegas'},
+    images:[{src:'maopeboca-lesoes.png', caption:'Lesões em mãos, pés, boca e nádegas'}],
     exantemaChar:'Vesicular/maculopapular, envolve mãos, pés, nádegas e boca. Lesões ulceradas na mucosa oral.',
     fases:[
       { t:'Fase Prodrômica', items:['Febre, faringite, diarreia'] },
@@ -448,7 +457,7 @@ const diagnoses = {
   escarlatina: {
     title:'Escarlatina', subtitle:'Streptococcus pyogenes (grupo A)',
     accent:'var(--red)', accentText:'var(--on-soft-red)',
-    image:{src:'escarlatina-sinais.png', caption:'Sinal de Filatov, língua em framboesa e sinal de Pastia'},
+    images:[{src:'escarlatina-sinais.png', caption:'Sinal de Filatov, língua em framboesa e sinal de Pastia'}],
     exantemaChar:'Micropapular, áspero — "pele em lixa". Progressão centrífuga, inicia em tronco e dobras. Descamação lamelar depois.',
     fases:[
       { t:'Fase Prodrômica', items:['Faringite estreptocócica','Língua em morango/framboesa'] },
@@ -468,7 +477,7 @@ const diagnoses = {
   kawasaki: {
     title:'Doença de Kawasaki', subtitle:'Vasculite de etiologia desconhecida',
     accent:'var(--red)', accentText:'var(--on-soft-red)',
-    image:{src:'kawasaki-mucosite.png', caption:'Conjuntivite não exsudativa, língua em framboesa e lábios fissurados'},
+    images:[{src:'kawasaki-mucosite.png', caption:'Conjuntivite não exsudativa, língua em framboesa e lábios fissurados'}],
     exantemaChar:'Exantema polimorfo, sem vesículas (pode ter enantema perineal). Se houver vesícula, pensar em outro diagnóstico.',
     fases:[
       { t:'Fase Prodrômica', items:['Febre alta por pelo menos 5 dias — critério obrigatório'] },
@@ -485,6 +494,7 @@ const diagnoses = {
   mono: {
     title:'Mononucleose', subtitle:'Vírus Epstein-Barr · "doença do beijo"',
     accent:'var(--red)', accentText:'var(--on-soft-red)',
+    images:[{src:'mono-faringite.png', caption:'Faringite exsudativa/membranosa'}],
     exantemaChar:'Rash variável, presente em 10–20% dos casos — muito mais comum (>70%) se usar amoxicilina/ampicilina.',
     fases:[
       { t:'Fase Prodrômica', items:['Febre, fadiga, faringite'] },
@@ -578,6 +588,17 @@ function restart() {
   render();
 }
 
+function renderImages(images) {
+  if (!images || !images.length) return '';
+  if (images.length === 1) {
+    const img = images[0];
+    return `<div class="dx-image"><img src="${img.src}" alt="${img.caption}"><div class="dx-image-caption">${img.caption}</div></div>`;
+  }
+  return `<div class="dx-image-gallery">${images.map(img =>
+    `<div class="dx-image"><img src="${img.src}" alt="${img.caption}"><div class="dx-image-caption">${img.caption}</div></div>`
+  ).join('')}</div>`;
+}
+
 function renderTxList(tx) {
   const items = tx.map(i => {
     if (typeof i === 'string') return `<li>${i}</li>`;
@@ -593,7 +614,7 @@ function renderDiagnosis(dxId, area) {
       <div class="dx-eyebrow">Diagnóstico mais provável</div>
       <h2>${d.title}</h2>
       <div class="dx-subtitle">${d.subtitle}</div>
-      ${d.image ? `<div class="dx-image"><img src="${d.image.src}" alt="${d.image.caption}"><div class="dx-image-caption">${d.image.caption}</div></div>` : ''}
+      ${renderImages(d.images)}
       <div class="dx-exantema-banner">
         <div class="dx-exantema-label">Características do Exantema</div>
         <div class="dx-exantema-text">${d.exantemaChar}</div>
@@ -693,7 +714,7 @@ function mapaDiseaseCardHTML(dId, accent, accentText) {
   let html = `<div class="mapa-disease-card" style="--accent:${accent}">
     <h3>${d.title}</h3>
     <div class="mapa-dc-meta">${d.subtitle}</div>
-    ${d.image ? `<div class="dx-image"><img src="${d.image.src}" alt="${d.image.caption}"><div class="dx-image-caption">${d.image.caption}</div></div>` : ''}
+    ${renderImages(d.images)}
     <div class="dx-exantema-banner" style="--accent-text:${accentText}">
       <div class="dx-exantema-label">Características do Exantema</div>
       <div class="dx-exantema-text">${d.exantemaChar}</div>
